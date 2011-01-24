@@ -21,12 +21,9 @@ public class LoginView extends VerticalLayout {
 		loginForm.setLoginButtonCaption("Login");
 		loginForm.addListener(new LoginListener() {
 			@Override
-			public void onLogin(LoginEvent event) {	
-				System.out.println("Login");
-				System.out.println(event.getLoginParameter("username"));
-				System.out.println(event.getLoginParameter("password"));
+			public void onLogin(LoginEvent event) {
 				getWindow().showNotification("LOGGED IN","\nWelcome "+event.getLoginParameter("username"));
-				getWindow().setContent(new Panel("abra"));
+				getWindow().setContent(new Homepage(event.getLoginParameter("username")));
 			}
 		});
 		
