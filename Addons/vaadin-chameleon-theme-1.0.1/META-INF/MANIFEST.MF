@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Class-Path: 
+Implementation-Title: Vaadin Chameleon Theme
+Vaadin-Package-Version: 1
+Implementation-Version: 1.0.1
+

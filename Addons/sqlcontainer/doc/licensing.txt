@@ -1,0 +1,5 @@
+= LICENSING =
+
+This Add-on component ("Software") to Vaadin Framework is distributed under the terms of
+Apache Software License 2.0 ("ASL") included as license-asl-2.0.txt in this software
+package.
