@@ -13,8 +13,8 @@ public class LoginView extends VerticalLayout {
 	private LoginForm loginForm;
 	
 	public LoginView() {
-		loginPanel = new Panel("CrazyBiz Login");
 		
+		loginPanel = new Panel("CrazyBiz Login");
 		loginForm = new LoginForm();
 		loginForm.setUsernameCaption("Username");
 		loginForm.setPasswordCaption("Password");
@@ -22,13 +22,14 @@ public class LoginView extends VerticalLayout {
 		loginForm.addListener(new LoginListener() {
 			@Override
 			public void onLogin(LoginEvent event) {
+				//TODO Add credentials control
 				getWindow().showNotification("LOGGED IN","\nWelcome "+event.getLoginParameter("username"));
 				getWindow().setContent(new Homepage(event.getLoginParameter("username")));
 			}
 		});
-		
 		loginPanel.setWidth(Sizeable.SIZE_UNDEFINED,0);
 		loginPanel.addComponent(loginForm);
+		
 		this.addComponent(loginPanel);
 		this.setComponentAlignment(loginPanel, Alignment.MIDDLE_CENTER);
 	}

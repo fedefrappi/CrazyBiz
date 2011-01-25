@@ -34,7 +34,7 @@ public class Homepage extends VerticalLayout {
         searchButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				getWindow().addComponent(new SearchItem());
+				getWindow().setContent(new SearchItem());
 			}
 		});
         // Horizontal layout for buttons
@@ -44,11 +44,9 @@ public class Homepage extends VerticalLayout {
         horizontalLayout.addComponent(insertButton);
         horizontalLayout.addComponent(searchButton);
         
-
-        //Vertical Layout
-		setComponentAlignment(cash, Alignment.MIDDLE_CENTER);
-        
         addComponent(cash);
         addComponent(horizontalLayout);
+		setComponentAlignment(horizontalLayout, Alignment.MIDDLE_CENTER);
+		setComponentAlignment(cash, Alignment.MIDDLE_CENTER);
 	}
 }
