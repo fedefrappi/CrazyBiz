@@ -1,5 +1,8 @@
 package com.example.crazybiz;
 
+
+import java.sql.SQLException;
+
 import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.LoginForm;
@@ -8,12 +11,14 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.LoginForm.LoginEvent;
 
+import dao.UserDAO;
+
 public class LoginView extends VerticalLayout {
 	private Panel loginPanel;
 	private LoginForm loginForm;
 	
 	public LoginView() {
-		
+		setSpacing(true);
 		loginPanel = new Panel("CrazyBiz Login");
 		loginForm = new LoginForm();
 		loginForm.setUsernameCaption("Username");
@@ -23,8 +28,20 @@ public class LoginView extends VerticalLayout {
 			@Override
 			public void onLogin(LoginEvent event) {
 				//TODO Add credentials control
-				getWindow().showNotification("LOGGED IN","\nWelcome "+event.getLoginParameter("username"));
-				getWindow().setContent(new Homepage(event.getLoginParameter("username")));
+				try {
+					if(UserDAO.isValidLogin(event.getLoginParameter("username"), event.getLoginParameter("password"))){
+						getWindow().showNotification("LOGGED IN","\nWelcome "+event.getLoginParameter("username"));
+						getWindow().setContent(new Homepage(event.getLoginParameter("username")));
+					}else{
+						
+					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 		loginPanel.setWidth(Sizeable.SIZE_UNDEFINED,0);

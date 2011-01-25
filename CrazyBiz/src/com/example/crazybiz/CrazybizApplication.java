@@ -9,6 +9,7 @@ public class CrazybizApplication extends Application {
 		Window mainWindow = new Window("Crazybiz Application");
 		mainWindow.addComponent(new LoginView());
 		setMainWindow(mainWindow);
+		setTheme("crazybiztheme");
 	}
 
 }
