@@ -10,6 +10,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.themes.BaseTheme;
 
 public class Homepage extends VerticalLayout {
 	private String username;
@@ -28,6 +29,7 @@ public class Homepage extends VerticalLayout {
 		setSpacing(true);
 		// UserLogged Label and button
 		HorizontalLayout userLoggedLayout = new HorizontalLayout();
+		userLoggedLayout.setMargin(false,true,false,false);
 		userLogged = new Label("You are logged in as " + username);
 		userLogout = new Button("Logout");
 		userLogout.addListener(new ClickListener() {
@@ -37,6 +39,7 @@ public class Homepage extends VerticalLayout {
 				getWindow().setContent(new LoginView());
 			}
 		});
+		userLogout.setStyleName(BaseTheme.BUTTON_LINK);
 		userLoggedLayout.setSpacing(true);
 		userLoggedLayout.addComponent(userLogged);
 		userLoggedLayout.addComponent(userLogout);

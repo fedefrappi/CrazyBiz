@@ -4,6 +4,7 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.AbstractSelect.Filtering;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -13,6 +14,8 @@ public class InsertItem extends VerticalLayout implements ValueChangeListener{
 	private ComboBox brand = new ComboBox("Brand");
 	private ComboBox model = new ComboBox("Brand");
 	private TextField source;
+	private ImageUpload iu;
+	private StatusCheckBox status;
 	
 	public InsertItem(String username) {
 		this.username = username;
@@ -20,6 +23,7 @@ public class InsertItem extends VerticalLayout implements ValueChangeListener{
 	}
 	
 	private void init() {
+		setMargin(true);
 		// Sets the combobox to show a certain property as the item caption
 		//brand.setItemCaptionPropertyId(ExampleUtil.iso3166_PROPERTY_NAME);
 		brand.setItemCaptionMode(AbstractSelect.ITEM_CAPTION_MODE_PROPERTY);
@@ -48,12 +52,14 @@ public class InsertItem extends VerticalLayout implements ValueChangeListener{
 		
 		source = new TextField("Source");
 		
-		ImageUpload iu = new ImageUpload();
+		status = new StatusCheckBox();
+		iu = new ImageUpload();
 		
 		
 		this.addComponent(brand);
 		this.addComponent(model);
 		this.addComponent(source);
+		this.addComponent(status);
 		this.addComponent(iu);
 		
 	}
@@ -61,6 +67,5 @@ public class InsertItem extends VerticalLayout implements ValueChangeListener{
 	@Override
 	public void valueChange(ValueChangeEvent event) {
 		// TODO Auto-generated method stub
-		
 	}
 }
