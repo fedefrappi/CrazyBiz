@@ -1,5 +1,6 @@
 package com.example.crazybiz;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -8,9 +9,12 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.VerticalLayout;
 
-public class ProposalEntryComponent extends HorizontalLayout implements Property.ValueChangeListener{
+public class ProposalEntryComponent extends VerticalLayout implements Property.ValueChangeListener{
 	
+	private HorizontalLayout up;
+
 	private TextField price;
 	private PopupDateField date;
 	private TextField user;
@@ -18,13 +22,18 @@ public class ProposalEntryComponent extends HorizontalLayout implements Property
 	
 	public ProposalEntryComponent() {
 		setSpacing(true);
+		up = new HorizontalLayout();
 		price = new TextField("Price");
+		price.setValue(new BigDecimal(0.00));
 		date = new PopupDateField("Date");
+		date.setResolution(PopupDateField.RESOLUTION_DAY);
 		user = new TextField("User");
 		message = new TextField("Message");
-		addComponent(price);
-        addComponent(date);
-		addComponent(user);
+		message.setSizeFull();
+		up.addComponent(price);
+		up.addComponent(user);
+        up.addComponent(date);
+		addComponent(up);
 		addComponent(message);
 	}
 	
@@ -38,4 +47,24 @@ public class ProposalEntryComponent extends HorizontalLayout implements Property
             String dateOut = dateFormatter.format(value);
         }
 	}
+	
+	public BigDecimal getPrice() {
+		return BigDecimal.valueOf(Double.parseDouble(price.getValue().toString()));
+	}
+
+	public String getMessage() {
+		return message.getValue().toString();
+	}
+
+	public String getUser() {
+		return user.getValue().toString();
+	}
+	
+	public Date getDate() {
+		DateFormat dateFormatter = DateFormat.getDateInstance(DateFormat.SHORT);
+        String dateOut = dateFormatter.format(date);
+		return new Date(dateOut);
+		//return new Date(date.getValue().toString());
+	}
+
 }

@@ -1,6 +1,7 @@
 package com.example.crazybiz;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -133,6 +134,21 @@ public class InsertItem extends GridLayout{
 		saveButton.addListener(new ClickListener() {		
 			@Override
 			public void buttonClick(ClickEvent event) {
+				if(wp == null){
+					wp = new WatchingPanel();
+				}
+				if(bp == null){
+					bp = new BoughtPanel();
+				}
+				if(shp == null){
+					shp = new ShippedPanel();
+				}
+				if(op == null){
+					op = new OnSalePanel();
+				}
+				if(sop == null){
+					sop = new SoldPanel();
+				}
 				try {
 					executeQuery();
 				} catch (SQLException e) {
@@ -199,14 +215,13 @@ public class InsertItem extends GridLayout{
 		int modelID = -1;
 		int itemID = -1;
 		
+		// Insert brand
 		try {
 			stm = DBactions.conn.prepareStatement("INSERT INTO brand(brand_name,brand_website) VALUES(?,?);",Statement.RETURN_GENERATED_KEYS);
 			stm.setString(1, brand.getValue().toString());
 			stm.setString(2, "unknown");
 			stm.executeUpdate();
 		} catch (MySQLIntegrityConstraintViolationException e) {}
-
-
 		try {
 			stm = DBactions.conn.prepareStatement("SELECT brand_id FROM brand WHERE brand_name=?;");
 			stm.clearParameters();
@@ -219,6 +234,7 @@ public class InsertItem extends GridLayout{
 			e.printStackTrace();
 		}
 		
+		// Insert model
 		try{
 			stm = 
 				DBactions.conn.prepareStatement("INSERT INTO model(brand_id,model_name,model_price) VALUES(?,?,?)");
@@ -256,7 +272,6 @@ public class InsertItem extends GridLayout{
 			}
 		} catch (MySQLIntegrityConstraintViolationException e) {}
 		
-		
 		// Insert watching
 		try{
 			stm = 
@@ -267,5 +282,72 @@ public class InsertItem extends GridLayout{
 			stm.setInt(3, itemID);
 			stm.executeUpdate();
 		} catch (MySQLIntegrityConstraintViolationException e) {}
+		
+		// Insert buy
+		try{
+			stm = 
+				DBactions.conn.prepareStatement("INSERT INTO buy(price,name,phone,email,country,city,item_id,date) VALUES(?,?,?,?,?,?,?)");
+			stm.clearParameters();
+			stm.setBigDecimal(1, bp.getPrice());
+			stm.setString(2, bp.getSellerName());
+			stm.setString(3, bp.getSellerPhone());
+			stm.setString(4, bp.getSellerEmail());
+			stm.setString(5, bp.getSellerCountry());
+			stm.setString(6, bp.getSellerCity());
+			stm.setInt(7, itemID);
+			stm.setDate(8, (Date)bp.getDate());
+			stm.executeUpdate();
+		} catch (MySQLIntegrityConstraintViolationException e) {}
+		
+		// Insert shipping
+		try{
+			stm = 
+				DBactions.conn.prepareStatement("INSERT INTO shipping(tracking,to,company,item_id) VALUES(?,?,?,?)");
+			stm.clearParameters();
+			stm.setString(1, shp.getTracking());
+			stm.setString(2, shp.getTo());
+			stm.setString(3, shp.getCompany());
+			stm.setInt(4, itemID);
+			stm.executeUpdate();
+		} catch (MySQLIntegrityConstraintViolationException e) {}
+		
+		// Insert on sale
+		for(ProposalEntryComponent proposal : op.getProposalComponent().getEntries()){
+			try{
+				stm = 
+					DBactions.conn.prepareStatement("INSERT INTO proposal(price,user,message,item_id) VALUES(?,?,?,?)");
+				stm.clearParameters();
+				stm.setBigDecimal(1, proposal.getPrice());
+				stm.setString(2, proposal.getUser());
+				stm.setString(3, proposal.getMessage());
+				stm.setInt(4, itemID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}
+		for(PostEntryComponent post : op.getPostComponent().getEntries()){
+			try{
+				stm = 
+					DBactions.conn.prepareStatement("INSERT INTO post(price,source,message,item_id) VALUES(?,?,?,?)");
+				stm.clearParameters();
+				stm.setBigDecimal(1, post.getPrice());
+				stm.setString(2, post.getSource());
+				stm.setString(3, post.getMessage());
+				stm.setInt(4, itemID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}
+		
+		// Insert sell
+		try{
+			stm = 
+				DBactions.conn.prepareStatement("INSERT INTO sell(price,date,item_id,buyer) VALUES(?,?,?,?)");
+			stm.clearParameters();
+			stm.setBigDecimal(1, sop.getPrice());
+			stm.setDate(2, new Date(100));
+			stm.setInt(3, itemID);
+			stm.setString(4, sop.getBuyer());
+			stm.executeUpdate();
+		} catch (MySQLIntegrityConstraintViolationException e) {}
+		
 	}
 }

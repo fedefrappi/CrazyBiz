@@ -16,7 +16,7 @@ public class ProposalComponent extends VerticalLayout{
 	public ProposalComponent() {
 		setSpacing(true);
 		entries = new ArrayList<ProposalEntryComponent>();
-		addEntry = new Button("Add entry");
+		addEntry = new Button("Add proposal");
 		addEntry.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
@@ -26,5 +26,9 @@ public class ProposalComponent extends VerticalLayout{
 			}
 		});
 		addComponent(addEntry);
+	}
+
+	public List<ProposalEntryComponent> getEntries() {
+		return entries;
 	}
 }

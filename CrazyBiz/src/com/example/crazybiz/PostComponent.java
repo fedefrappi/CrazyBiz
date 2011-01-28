@@ -16,7 +16,7 @@ public class PostComponent extends VerticalLayout{
 	public PostComponent() {
 		setSpacing(true);
 		entries = new ArrayList<PostEntryComponent>();
-		addEntry = new Button("Add entry");
+		addEntry = new Button("Add post");
 		addEntry.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
@@ -26,5 +26,9 @@ public class PostComponent extends VerticalLayout{
 			}
 		});
 		addComponent(addEntry);
+	}
+
+	public List<PostEntryComponent> getEntries() {
+		return entries;
 	}
 }

@@ -3,6 +3,8 @@ package com.example.crazybiz;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -16,6 +18,7 @@ public class WatchingPanel extends VerticalLayout{
 	
 	public WatchingPanel() {
 		price = new TextField("Price");
+		price.setValue(new BigDecimal(0.00));
 
 		priceOptionsSelection = new OptionGroup("FDP", priceOptions);
 		priceOptionsSelection.setNullSelectionAllowed(false);

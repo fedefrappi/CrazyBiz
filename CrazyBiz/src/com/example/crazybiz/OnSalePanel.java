@@ -18,4 +18,12 @@ public class OnSalePanel extends GridLayout{
 		addComponent(postComponent,0,0);
 		addComponent(proposalComponent,0,1);
 	}
+
+	public PostComponent getPostComponent() {
+		return postComponent;
+	}
+
+	public ProposalComponent getProposalComponent() {
+		return proposalComponent;
+	}
 }

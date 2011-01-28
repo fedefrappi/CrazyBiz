@@ -5,18 +5,30 @@ import com.vaadin.ui.VerticalLayout;
 
 public class ShippedPanel extends VerticalLayout{
 
-	private TextField shippingCompany;
+	private TextField company;
 	private TextField tracking;
 	private TextField to;
 		
 	public ShippedPanel() {        
-        shippingCompany = new TextField("Shipping Company");
+        company = new TextField("Shipping Company");
         tracking = new TextField("Tracking");
         to = new TextField("To");
         
-        addComponent(shippingCompany);
+        addComponent(company);
         addComponent(tracking);
         addComponent(to);
 	}
 
+	public String getCompany() {
+		return company.getValue().toString();
+	}
+
+	public String getTracking() {
+		return tracking.getValue().toString();
+	}
+
+	public String getTo() {
+		return to.getValue().toString();
+	}
+	
 }

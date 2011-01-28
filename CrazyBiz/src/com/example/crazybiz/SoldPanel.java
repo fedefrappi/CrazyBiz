@@ -1,5 +1,6 @@
 package com.example.crazybiz;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -17,8 +18,8 @@ public class SoldPanel extends VerticalLayout implements Property.ValueChangeLis
 		
 	public SoldPanel() {        
         price = new TextField("Price");
-		date = new PopupDateField();
-        date.setInputPrompt("Start date");
+        price.setValue(new BigDecimal(0.00));
+		date = new PopupDateField("Date");
         date.setResolution(PopupDateField.RESOLUTION_DAY);
         date.addListener(this);
         date.setImmediate(true);
@@ -39,4 +40,17 @@ public class SoldPanel extends VerticalLayout implements Property.ValueChangeLis
             String dateOut = dateFormatter.format(value);            
         }
 	}
+
+	public BigDecimal getPrice() {
+		return BigDecimal.valueOf(Double.parseDouble(price.getValue().toString()));
+	}
+
+	public Date getDate() {
+		return new Date(date.getInputPrompt());
+	}
+
+	public String getBuyer() {
+		return buyer.getValue().toString();
+	}
+	
 }
