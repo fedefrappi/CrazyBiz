@@ -29,12 +29,11 @@ public class LoginView extends VerticalLayout {
 			public void onLogin(LoginEvent event) {
 				//TODO Add credentials control
 				try {
-					if(UserDAO.isValidLogin(event.getLoginParameter("username"), event.getLoginParameter("password"))){
+					UserDAO.connect();
+					//if(UserDAO.isValidLogin(event.getLoginParameter("username"), event.getLoginParameter("password"))){
 						getWindow().showNotification("LOGGED IN","\nWelcome "+event.getLoginParameter("username"));
 						getWindow().setContent(new Homepage(event.getLoginParameter("username")));
-					}else{
-						
-					}
+					//}
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
