@@ -12,8 +12,8 @@ import domain.Brand;
 import domain.Model;
 
 
-public class UserDAO {
-	private static Connection conn;
+public class DBactions {
+	public static Connection conn;
 	
 	public static void connect() throws ClassNotFoundException, SQLException{
 		Class.forName("com.mysql.jdbc.Driver");
@@ -59,5 +59,11 @@ public class UserDAO {
 		stm.setString(1, brandName);
 		stm.setString(2, "unknown");
 	}
+
+	public static ResultSet getSearchResults(String string) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	
 }

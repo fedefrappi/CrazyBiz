@@ -11,7 +11,7 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.LoginForm.LoginEvent;
 
-import dao.UserDAO;
+import dao.DBactions;
 
 public class LoginView extends VerticalLayout {
 	private Panel loginPanel;
@@ -29,7 +29,7 @@ public class LoginView extends VerticalLayout {
 			public void onLogin(LoginEvent event) {
 				//TODO Add credentials control
 				try {
-					UserDAO.connect();
+					DBactions.connect();
 					//if(UserDAO.isValidLogin(event.getLoginParameter("username"), event.getLoginParameter("password"))){
 						getWindow().showNotification("LOGGED IN","\nWelcome "+event.getLoginParameter("username"));
 						getWindow().setContent(new Homepage(event.getLoginParameter("username")));

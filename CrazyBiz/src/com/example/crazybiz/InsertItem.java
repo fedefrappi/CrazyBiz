@@ -1,5 +1,7 @@
 package com.example.crazybiz;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -18,7 +20,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-import dao.UserDAO;
+import dao.DBactions;
 import domain.Brand;
 import domain.Model;
 
@@ -71,14 +73,11 @@ public class InsertItem extends GridLayout{
 		backButton.setStyleName(BaseTheme.BUTTON_LINK);
 		backLayout.addComponent(backButton);
 
-		// Sets the combobox to show a certain property as the item caption
-		List<Brand> brandList = UserDAO.getBrands();
+		List<Brand> brandList = DBactions.getBrands();
 		for(Brand currentBrand : brandList){
 			brand.addItem(currentBrand.getName());			
 		}
-		// Sets the icon to use with the items
 		brand.setWidth("100px");
-		// Set the appropriate filtering mode for this example
 		brand.setFilteringMode(Filtering.FILTERINGMODE_STARTSWITH);
 		brand.setImmediate(true);
 		brand.addListener(new ValueChangeListener() {
@@ -87,18 +86,16 @@ public class InsertItem extends GridLayout{
 				String selectedBrand = event.getProperty().toString();
 				List<Model> filteredModels;
 				try {
-					filteredModels = UserDAO.getModels(selectedBrand);
+					filteredModels = DBactions.getModels(selectedBrand);
 					model.removeAllItems();
 					for(Model currentModel : filteredModels){
 						model.addItem(currentModel.getName());			
 					}
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		});
-		// Disallow null selections
 		brand.setNullSelectionAllowed(false);
 		brand.setNewItemsAllowed(true);
 		brand.setNewItemHandler(new NewItemHandler() {
@@ -110,10 +107,8 @@ public class InsertItem extends GridLayout{
 		});
 		
 		model.setWidth("150px");
-		// Set the appropriate filtering mode for this example
 		model.setFilteringMode(Filtering.FILTERINGMODE_STARTSWITH);
 		model.setImmediate(true);
-		// Disallow null selections
 		model.setNullSelectionAllowed(false);
 		model.setNewItemsAllowed(true);
 		model.setNewItemHandler(new NewItemHandler() {
@@ -124,7 +119,6 @@ public class InsertItem extends GridLayout{
 			}
 		});
 
-		
 		source = new TextField("Source");
 		source.setWidth("200px");
 		
@@ -133,6 +127,17 @@ public class InsertItem extends GridLayout{
 		iu = new ImageUpload();
 		
 		saveButton = new Button("Save item");
+		saveButton.addListener(new ClickListener() {		
+			@Override
+			public void buttonClick(ClickEvent event) {
+				try {
+					executeQuery();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
 		
 		leftLayout.addComponent(backLayout);
         setComponentAlignment(backLayout, Alignment.TOP_LEFT);
@@ -147,6 +152,21 @@ public class InsertItem extends GridLayout{
 		
 	}
 	
+	protected void executeQuery() throws SQLException {
+		PreparedStatement stm = DBactions.conn.prepareStatement("INSERT INTO brand(brand_name,brand_website) VALUES(?,?);");
+		//stm.setString(1, brand.getValue().toString());
+		stm.setString(1, brand.getValue().toString());
+		stm.setString(2, "unknown");
+		stm.executeUpdate();
+		/*
+		stm = 
+			DBactions.conn.prepareStatement("INSERT INTO model(brand_id,model_name,model_price) VALUES(?,?,?)");
+		stm.setString(2, model.getValue().toString());
+		stm.setString(3, 0);
+		stm.executeQuery();
+		*/
+	}
+
 	public void showWatchingPanel(){
 		this.removeComponent(1,0);
 		if(wp == null){
