@@ -1,8 +1,8 @@
 package com.example.crazybiz;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -10,6 +10,7 @@ import com.vaadin.ui.VerticalLayout;
 public class WatchingPanel extends VerticalLayout{
 
 	private TextField price;
+
 	private static final List<String> priceOptions = Arrays.asList(new String[] {"IN", "OUT"});
 	private OptionGroup priceOptionsSelection;
 	
@@ -23,5 +24,13 @@ public class WatchingPanel extends VerticalLayout{
         
         addComponent(price);
         addComponent(priceOptionsSelection);
+	}
+	
+	public BigDecimal getPrice() {
+		return BigDecimal.valueOf(Double.parseDouble(price.getValue().toString()));
+	}
+	
+	public boolean getFdpin(){
+		return priceOptionsSelection.isSelected("IN");
 	}
 }

@@ -1,10 +1,13 @@
 package com.example.crazybiz;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.AbstractSelect.Filtering;
@@ -152,20 +155,6 @@ public class InsertItem extends GridLayout{
 		
 	}
 	
-	protected void executeQuery() throws SQLException {
-		PreparedStatement stm = DBactions.conn.prepareStatement("INSERT INTO brand(brand_name,brand_website) VALUES(?,?);");
-		//stm.setString(1, brand.getValue().toString());
-		stm.setString(1, brand.getValue().toString());
-		stm.setString(2, "unknown");
-		stm.executeUpdate();
-		/*
-		stm = 
-			DBactions.conn.prepareStatement("INSERT INTO model(brand_id,model_name,model_price) VALUES(?,?,?)");
-		stm.setString(2, model.getValue().toString());
-		stm.setString(3, 0);
-		stm.executeQuery();
-		*/
-	}
 
 	public void showWatchingPanel(){
 		this.removeComponent(1,0);
@@ -201,5 +190,82 @@ public class InsertItem extends GridLayout{
 			sop = new SoldPanel();
 		}
 		this.addComponent(sop,1,0);
+	}
+	
+	protected void executeQuery() throws SQLException{
+		PreparedStatement stm = null;
+		ResultSet res = null;
+		int brandID = -1;
+		int modelID = -1;
+		int itemID = -1;
+		
+		try {
+			stm = DBactions.conn.prepareStatement("INSERT INTO brand(brand_name,brand_website) VALUES(?,?);",Statement.RETURN_GENERATED_KEYS);
+			stm.setString(1, brand.getValue().toString());
+			stm.setString(2, "unknown");
+			stm.executeUpdate();
+		} catch (MySQLIntegrityConstraintViolationException e) {}
+
+
+		try {
+			stm = DBactions.conn.prepareStatement("SELECT brand_id FROM brand WHERE brand_name=?;");
+			stm.clearParameters();
+			stm.setString(1, brand.getValue().toString());
+			res = stm.executeQuery();
+			while(res.next()){
+				brandID = res.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		try{
+			stm = 
+				DBactions.conn.prepareStatement("INSERT INTO model(brand_id,model_name,model_price) VALUES(?,?,?)");
+			stm.clearParameters();
+			stm.setInt(1, brandID);
+			stm.setString(2, model.getValue().toString());
+			stm.setBigDecimal(3, BigDecimal.valueOf(0.0));
+			stm.executeUpdate();
+		} catch (MySQLIntegrityConstraintViolationException e) {}
+
+		try{
+			stm = DBactions.conn.prepareStatement("SELECT model_id FROM model WHERE model_name=?;");
+			stm.clearParameters();
+			stm.setString(1, model.getValue().toString());
+			res = stm.executeQuery();
+			while(res.next()){
+				modelID = res.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		// Insert item
+		try{
+			stm = 
+				DBactions.conn.prepareStatement("INSERT INTO item(source,model_id,brand_id) VALUES(?,?,?)",Statement.RETURN_GENERATED_KEYS);
+			stm.clearParameters();
+			stm.setString(1, source.getValue().toString());
+			stm.setInt(2, modelID);
+			stm.setInt(3, brandID);
+			stm.executeUpdate();
+			ResultSet keys = stm.getGeneratedKeys();
+			if(keys.next()){
+				itemID = keys.getInt(1);
+			}
+		} catch (MySQLIntegrityConstraintViolationException e) {}
+		
+		
+		// Insert watching
+		try{
+			stm = 
+				DBactions.conn.prepareStatement("INSERT INTO watched(price,fdpin,item_id) VALUES(?,?,?)");
+			stm.clearParameters();
+			stm.setBigDecimal(1, wp.getPrice());
+			stm.setBoolean(2, wp.getFdpin());
+			stm.setInt(3, itemID);
+			stm.executeUpdate();
+		} catch (MySQLIntegrityConstraintViolationException e) {}
 	}
 }
