@@ -21,6 +21,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.ProgressIndicator;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -37,7 +38,9 @@ public class InsertItem extends GridLayout{
 	private StatusManager status;
 	private Button backButton;
 	private Button saveButton;
+	private ProgressIndicator pi;
 	private VerticalLayout leftLayout;
+	
 	private WatchingPanel wp;
 	private BoughtPanel bp;
 	private ShippedPanel shp;
@@ -130,6 +133,10 @@ public class InsertItem extends GridLayout{
 		
 		iu = new ImageUpload();
 		
+		pi = new ProgressIndicator();
+		pi.setVisible(false);
+		pi.setValue(0f);
+
 		saveButton = new Button("Save item");
 		saveButton.addListener(new ClickListener() {		
 			@Override
@@ -209,6 +216,11 @@ public class InsertItem extends GridLayout{
 	}
 	
 	protected void executeQuery() throws SQLException{
+		pi.setVisible(true);
+		int queryNumber = 0;
+		float queryTotalNumber = 11;
+		
+		
 		PreparedStatement stm = null;
 		ResultSet res = null;
 		int brandID = -1;
@@ -222,6 +234,7 @@ public class InsertItem extends GridLayout{
 			stm.setString(2, "unknown");
 			stm.executeUpdate();
 		} catch (MySQLIntegrityConstraintViolationException e) {}
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
 		try {
 			stm = DBactions.conn.prepareStatement("SELECT brand_id FROM brand WHERE brand_name=?;");
 			stm.clearParameters();
@@ -233,6 +246,8 @@ public class InsertItem extends GridLayout{
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
+
 		
 		// Insert model
 		try{
@@ -244,6 +259,7 @@ public class InsertItem extends GridLayout{
 			stm.setBigDecimal(3, BigDecimal.valueOf(0.0));
 			stm.executeUpdate();
 		} catch (MySQLIntegrityConstraintViolationException e) {}
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
 
 		try{
 			stm = DBactions.conn.prepareStatement("SELECT model_id FROM model WHERE model_name=?;");
@@ -256,7 +272,8 @@ public class InsertItem extends GridLayout{
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
+
 		// Insert item
 		try{
 			stm = 
@@ -271,7 +288,8 @@ public class InsertItem extends GridLayout{
 				itemID = keys.getInt(1);
 			}
 		} catch (MySQLIntegrityConstraintViolationException e) {}
-		
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
+
 		// Insert watching
 		try{
 			stm = 
@@ -282,7 +300,8 @@ public class InsertItem extends GridLayout{
 			stm.setInt(3, itemID);
 			stm.executeUpdate();
 		} catch (MySQLIntegrityConstraintViolationException e) {}
-		
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
+
 		// Insert buy
 		try{
 			stm = 
@@ -298,7 +317,8 @@ public class InsertItem extends GridLayout{
 			stm.setDate(8, (Date)bp.getDate());
 			stm.executeUpdate();
 		} catch (MySQLIntegrityConstraintViolationException e) {}
-		
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
+
 		// Insert shipping
 		try{
 			stm = 
@@ -310,7 +330,8 @@ public class InsertItem extends GridLayout{
 			stm.setInt(4, itemID);
 			stm.executeUpdate();
 		} catch (MySQLIntegrityConstraintViolationException e) {}
-		
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
+
 		// Insert on sale
 		for(ProposalEntryComponent proposal : op.getProposalComponent().getEntries()){
 			try{
@@ -324,6 +345,7 @@ public class InsertItem extends GridLayout{
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
 		for(PostEntryComponent post : op.getPostComponent().getEntries()){
 			try{
 				stm = 
@@ -336,7 +358,8 @@ public class InsertItem extends GridLayout{
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
-		
+		pi.setValue(new Float(++queryNumber / queryTotalNumber));
+
 		// Insert sell
 		try{
 			stm = 
@@ -348,6 +371,8 @@ public class InsertItem extends GridLayout{
 			stm.setString(4, sop.getBuyer());
 			stm.executeUpdate();
 		} catch (MySQLIntegrityConstraintViolationException e) {}
-		
+		//pi.setValue(new Float(++queryNumber / queryTotalNumber));
+		pi.setValue(1f);
+
 	}
 }

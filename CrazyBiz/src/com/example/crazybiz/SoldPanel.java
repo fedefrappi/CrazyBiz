@@ -42,7 +42,7 @@ public class SoldPanel extends VerticalLayout implements Property.ValueChangeLis
 	}
 
 	public BigDecimal getPrice() {
-		return BigDecimal.valueOf(Double.parseDouble(price.getValue().toString()));
+		return Utils.parsePrice(price.getValue().toString());
 	}
 
 	public Date getDate() {

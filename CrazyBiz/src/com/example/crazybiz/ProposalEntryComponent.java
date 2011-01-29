@@ -49,7 +49,7 @@ public class ProposalEntryComponent extends VerticalLayout implements Property.V
 	}
 	
 	public BigDecimal getPrice() {
-		return BigDecimal.valueOf(Double.parseDouble(price.getValue().toString()));
+		return Utils.parsePrice(price.getValue().toString());
 	}
 
 	public String getMessage() {

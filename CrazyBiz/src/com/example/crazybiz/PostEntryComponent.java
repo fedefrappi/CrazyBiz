@@ -28,7 +28,7 @@ public class PostEntryComponent extends VerticalLayout{
 	}
 
 	public BigDecimal getPrice() {
-		return BigDecimal.valueOf(Double.parseDouble(price.getValue().toString()));
+		return Utils.parsePrice(price.getValue().toString());
 	}
 
 	public String getSource() {
