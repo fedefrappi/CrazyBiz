@@ -128,4 +128,49 @@ public class StatusManager extends GridLayout{
 		addComponent(soldButton,1,4);
 	}
 
+	public CheckBox getWatchingCheckbox() {
+		return watchingCheckbox;
+	}
+
+	public CheckBox getBoughtCheckbox() {
+		return boughtCheckbox;
+	}
+
+	public CheckBox getShippedCheckbox() {
+		return shippedCheckbox;
+	}
+
+	public CheckBox getOnsaleCheckbox() {
+		return onsaleCheckbox;
+	}
+
+	public CheckBox getSoldCheckbox() {
+		return soldCheckbox;
+	}
+
+	public Button getWatchingButton() {
+		return watchingButton;
+	}
+
+	public Button getBoughtButton() {
+		return boughtButton;
+	}
+
+	public Button getShippedButton() {
+		return shippedButton;
+	}
+
+	public Button getOnsaleButton() {
+		return onsaleButton;
+	}
+
+	public Button getSoldButton() {
+		return soldButton;
+	}
+
+	public InsertItem getParent() {
+		return parent;
+	}
+	
+	
 }

@@ -17,7 +17,7 @@ public class LoginView extends VerticalLayout {
 	private Panel loginPanel;
 	private LoginForm loginForm;
 	
-	public LoginView() {
+	public LoginView(final CrazybizApplication crazybizApplication) {
 		setSpacing(true);
 		loginPanel = new Panel("CrazyBiz Login");
 		loginForm = new LoginForm();
@@ -31,8 +31,12 @@ public class LoginView extends VerticalLayout {
 				try {
 					DBactions.connect();
 					//if(UserDAO.isValidLogin(event.getLoginParameter("username"), event.getLoginParameter("password"))){
-						getWindow().showNotification("LOGGED IN","\nWelcome "+event.getLoginParameter("username"));
-						getWindow().setContent(new Homepage(event.getLoginParameter("username")));
+						String username = event.getLoginParameter("username");
+						getWindow().showNotification("LOGGED IN","\nWelcome "+username);
+						//getWindow().setContent(new Homepage(event.getLoginParameter("username")));
+						crazybizApplication.getWindow().removeAllComponents();
+						crazybizApplication.setHome(new Homepage(crazybizApplication,username));
+						crazybizApplication.getWindow().addComponent(crazybizApplication.getHome());
 					//}
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block

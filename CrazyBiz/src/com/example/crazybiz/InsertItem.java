@@ -21,7 +21,6 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.ProgressIndicator;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -30,6 +29,7 @@ import domain.Brand;
 import domain.Model;
 
 public class InsertItem extends GridLayout{
+	private CrazybizApplication crazybizApplication;
 	private String username;
 	private ComboBox brand = new ComboBox("Brand");
 	private ComboBox model = new ComboBox("Model");
@@ -38,7 +38,6 @@ public class InsertItem extends GridLayout{
 	private StatusManager status;
 	private Button backButton;
 	private Button saveButton;
-	private ProgressIndicator pi;
 	private VerticalLayout leftLayout;
 	
 	private WatchingPanel wp;
@@ -46,11 +45,21 @@ public class InsertItem extends GridLayout{
 	private ShippedPanel shp;
 	private OnSalePanel op;
 	private SoldPanel sop;
+	
+	private int brandID;
+	private int modelID;
+	private int itemID;
 
 	
-	public InsertItem(String username) {
+	public InsertItem(CrazybizApplication crazybizApplication, String username) {
 		super(2,1);
+		this.crazybizApplication = crazybizApplication;
 		this.username = username;
+		
+		brandID = -1;
+		modelID = -1;
+		itemID = -1;
+		
 		try {
 			init();
 		} catch (SQLException e) {
@@ -73,8 +82,9 @@ public class InsertItem extends GridLayout{
 		backButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				getWindow().removeComponent(getParent());
-				getWindow().setContent(new Homepage(username));
+				crazybizApplication.getWindow().removeAllComponents();
+				crazybizApplication.setHome(new Homepage(crazybizApplication, username));
+				crazybizApplication.getWindow().setContent(crazybizApplication.getHome());
 			}
 		});
 		backButton.setStyleName(BaseTheme.BUTTON_LINK);
@@ -132,10 +142,6 @@ public class InsertItem extends GridLayout{
 		status = new StatusManager(this);
 		
 		iu = new ImageUpload();
-		
-		pi = new ProgressIndicator();
-		pi.setVisible(false);
-		pi.setValue(0f);
 
 		saveButton = new Button("Save item");
 		saveButton.addListener(new ClickListener() {		
@@ -216,163 +222,193 @@ public class InsertItem extends GridLayout{
 	}
 	
 	protected void executeQuery() throws SQLException{
-		pi.setVisible(true);
-		int queryNumber = 0;
-		float queryTotalNumber = 11;
-		
 		
 		PreparedStatement stm = null;
 		ResultSet res = null;
-		int brandID = -1;
-		int modelID = -1;
-		int itemID = -1;
-		
-		// Insert brand
-		try {
-			stm = DBactions.conn.prepareStatement("INSERT INTO brand(brand_name,brand_website) VALUES(?,?);",Statement.RETURN_GENERATED_KEYS);
-			stm.setString(1, brand.getValue().toString());
-			stm.setString(2, "unknown");
-			stm.executeUpdate();
-		} catch (MySQLIntegrityConstraintViolationException e) {}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-		try {
-			stm = DBactions.conn.prepareStatement("SELECT brand_id FROM brand WHERE brand_name=?;");
-			stm.clearParameters();
-			stm.setString(1, brand.getValue().toString());
-			res = stm.executeQuery();
-			while(res.next()){
-				brandID = res.getInt(1);
+
+		if(brandID==-1){
+			// Insert brand
+			try {
+				stm = DBactions.conn.prepareStatement("INSERT INTO brand(brand_name,brand_website) VALUES(?,?);",Statement.RETURN_GENERATED_KEYS);
+				stm.setString(1, brand.getValue().toString());
+				stm.setString(2, "unknown");
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
+			try {
+				stm = DBactions.conn.prepareStatement("SELECT brand_id FROM brand WHERE brand_name=?;");
+				stm.clearParameters();
+				stm.setString(1, brand.getValue().toString());
+				res = stm.executeQuery();
+				while(res.next()){
+					brandID = res.getInt(1);
+				}
+			} catch (SQLException e) {
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-
 		
-		// Insert model
-		try{
-			stm = 
-				DBactions.conn.prepareStatement("INSERT INTO model(brand_id,model_name,model_price) VALUES(?,?,?)");
-			stm.clearParameters();
-			stm.setInt(1, brandID);
-			stm.setString(2, model.getValue().toString());
-			stm.setBigDecimal(3, BigDecimal.valueOf(0.0));
-			stm.executeUpdate();
-		} catch (MySQLIntegrityConstraintViolationException e) {}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-
-		try{
-			stm = DBactions.conn.prepareStatement("SELECT model_id FROM model WHERE model_name=?;");
-			stm.clearParameters();
-			stm.setString(1, model.getValue().toString());
-			res = stm.executeQuery();
-			while(res.next()){
-				modelID = res.getInt(1);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-
-		// Insert item
-		try{
-			stm = 
-				DBactions.conn.prepareStatement("INSERT INTO item(source,model_id,brand_id) VALUES(?,?,?)",Statement.RETURN_GENERATED_KEYS);
-			stm.clearParameters();
-			stm.setString(1, source.getValue().toString());
-			stm.setInt(2, modelID);
-			stm.setInt(3, brandID);
-			stm.executeUpdate();
-			ResultSet keys = stm.getGeneratedKeys();
-			if(keys.next()){
-				itemID = keys.getInt(1);
-			}
-		} catch (MySQLIntegrityConstraintViolationException e) {}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-
-		// Insert watching
-		try{
-			stm = 
-				DBactions.conn.prepareStatement("INSERT INTO watched(price,fdpin,item_id) VALUES(?,?,?)");
-			stm.clearParameters();
-			stm.setBigDecimal(1, wp.getPrice());
-			stm.setBoolean(2, wp.getFdpin());
-			stm.setInt(3, itemID);
-			stm.executeUpdate();
-		} catch (MySQLIntegrityConstraintViolationException e) {}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-
-		// Insert buy
-		try{
-			stm = 
-				DBactions.conn.prepareStatement("INSERT INTO buy(price,name,phone,email,country,city,item_id,date) VALUES(?,?,?,?,?,?,?)");
-			stm.clearParameters();
-			stm.setBigDecimal(1, bp.getPrice());
-			stm.setString(2, bp.getSellerName());
-			stm.setString(3, bp.getSellerPhone());
-			stm.setString(4, bp.getSellerEmail());
-			stm.setString(5, bp.getSellerCountry());
-			stm.setString(6, bp.getSellerCity());
-			stm.setInt(7, itemID);
-			stm.setDate(8, (Date)bp.getDate());
-			stm.executeUpdate();
-		} catch (MySQLIntegrityConstraintViolationException e) {}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-
-		// Insert shipping
-		try{
-			stm = 
-				DBactions.conn.prepareStatement("INSERT INTO shipping(tracking,to,company,item_id) VALUES(?,?,?,?)");
-			stm.clearParameters();
-			stm.setString(1, shp.getTracking());
-			stm.setString(2, shp.getTo());
-			stm.setString(3, shp.getCompany());
-			stm.setInt(4, itemID);
-			stm.executeUpdate();
-		} catch (MySQLIntegrityConstraintViolationException e) {}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-
-		// Insert on sale
-		for(ProposalEntryComponent proposal : op.getProposalComponent().getEntries()){
+		if(modelID==-1){
+			// Insert model
 			try{
 				stm = 
-					DBactions.conn.prepareStatement("INSERT INTO proposal(price,user,message,item_id) VALUES(?,?,?,?)");
+					DBactions.conn.prepareStatement("INSERT INTO model(brand_id,model_name,model_price) VALUES(?,?,?)");
 				stm.clearParameters();
-				stm.setBigDecimal(1, proposal.getPrice());
-				stm.setString(2, proposal.getUser());
-				stm.setString(3, proposal.getMessage());
-				stm.setInt(4, itemID);
+				stm.setInt(1, brandID);
+				stm.setString(2, model.getValue().toString());
+				stm.setBigDecimal(3, BigDecimal.valueOf(0.0));
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
+	
+			try{
+				stm = DBactions.conn.prepareStatement("SELECT model_id FROM model WHERE model_name=?;");
+				stm.clearParameters();
+				stm.setString(1, model.getValue().toString());
+				res = stm.executeQuery();
+				while(res.next()){
+					modelID = res.getInt(1);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		if(itemID==-1){
+			// Insert item
+			try{
+				stm = 
+					DBactions.conn.prepareStatement("INSERT INTO item(source,model_id,status) VALUES(?,?,?)",Statement.RETURN_GENERATED_KEYS);
+				stm.clearParameters();
+				stm.setString(1, source.getValue().toString());
+				stm.setInt(2, modelID);
+				stm.setString(3, "disabled");
+				stm.executeUpdate();
+				ResultSet keys = stm.getGeneratedKeys();
+				if(keys.next()){
+					itemID = keys.getInt(1);
+				}
+			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}
+
+		if(status.getWatchingCheckbox().booleanValue()){
+			// Insert watching
+			try{
+				stm = 
+					DBactions.conn.prepareStatement("INSERT INTO watched(price,fdpin,item_id) VALUES(?,?,?)");
+				stm.clearParameters();
+				stm.setBigDecimal(1, wp.getPrice());
+				stm.setBoolean(2, wp.getFdpin());
+				stm.setInt(3, itemID);
+				stm.executeUpdate();
+				// Update item status
+				stm = 
+					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
+				stm.clearParameters();
+				stm.setString(1, "watching");
+				stm.setInt(2, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-		for(PostEntryComponent post : op.getPostComponent().getEntries()){
+
+		if(status.getBoughtCheckbox().booleanValue()){
+			// Insert buy
 			try{
 				stm = 
-					DBactions.conn.prepareStatement("INSERT INTO post(price,source,message,item_id) VALUES(?,?,?,?)");
+					DBactions.conn.prepareStatement("INSERT INTO buy(price,name,phone,email,country,city,item_id,date) VALUES(?,?,?,?,?,?,?)");
 				stm.clearParameters();
-				stm.setBigDecimal(1, post.getPrice());
-				stm.setString(2, post.getSource());
-				stm.setString(3, post.getMessage());
-				stm.setInt(4, itemID);
+				stm.setBigDecimal(1, bp.getPrice());
+				stm.setString(2, bp.getSellerName());
+				stm.setString(3, bp.getSellerPhone());
+				stm.setString(4, bp.getSellerEmail());
+				stm.setString(5, bp.getSellerCountry());
+				stm.setString(6, bp.getSellerCity());
+				stm.setInt(7, itemID);
+				stm.setDate(8, (Date)bp.getDate());
+				stm.executeUpdate();
+				// Update item status
+				stm = 
+					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
+				stm.clearParameters();
+				stm.setString(1, "bought");
+				stm.setInt(2, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
-		pi.setValue(new Float(++queryNumber / queryTotalNumber));
-
-		// Insert sell
-		try{
+		
+		if(status.getShippedCheckbox().booleanValue()){
+			// Insert shipping
+			try{
+				stm = 
+					DBactions.conn.prepareStatement("INSERT INTO shipping(tracking,to,company,item_id) VALUES(?,?,?,?)");
+				stm.clearParameters();
+				stm.setString(1, shp.getTracking());
+				stm.setString(2, shp.getTo());
+				stm.setString(3, shp.getCompany());
+				stm.setInt(4, itemID);
+				stm.executeUpdate();
+				// Update item status
+				stm = 
+					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
+				stm.clearParameters();
+				stm.setString(1, "shipped");
+				stm.setInt(2, itemID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}
+		
+		if(status.getOnsaleCheckbox().booleanValue()){
+			// Insert on sale
+			for(ProposalEntryComponent proposal : op.getProposalComponent().getEntries()){
+				try{
+					stm = 
+						DBactions.conn.prepareStatement("INSERT INTO proposal(price,user,message,item_id) VALUES(?,?,?,?)");
+					stm.clearParameters();
+					stm.setBigDecimal(1, proposal.getPrice());
+					stm.setString(2, proposal.getUser());
+					stm.setString(3, proposal.getMessage());
+					stm.setInt(4, itemID);
+					stm.executeUpdate();
+				} catch (MySQLIntegrityConstraintViolationException e) {}
+			}
+			for(PostEntryComponent post : op.getPostComponent().getEntries()){
+				try{
+					stm = 
+						DBactions.conn.prepareStatement("INSERT INTO post(price,source,message,item_id) VALUES(?,?,?,?)");
+					stm.clearParameters();
+					stm.setBigDecimal(1, post.getPrice());
+					stm.setString(2, post.getSource());
+					stm.setString(3, post.getMessage());
+					stm.setInt(4, itemID);
+					stm.executeUpdate();
+					
+				} catch (MySQLIntegrityConstraintViolationException e) {}
+			}
+			// Update item status
 			stm = 
-				DBactions.conn.prepareStatement("INSERT INTO sell(price,date,item_id,buyer) VALUES(?,?,?,?)");
+				DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
 			stm.clearParameters();
-			stm.setBigDecimal(1, sop.getPrice());
-			stm.setDate(2, new Date(100));
-			stm.setInt(3, itemID);
-			stm.setString(4, sop.getBuyer());
+			stm.setString(1, "onSale");
+			stm.setInt(2, itemID);
 			stm.executeUpdate();
-		} catch (MySQLIntegrityConstraintViolationException e) {}
-		//pi.setValue(new Float(++queryNumber / queryTotalNumber));
-		pi.setValue(1f);
-
+		}
+		
+		if(status.getSoldCheckbox().booleanValue()){
+			// Insert sell
+			try{
+				stm = 
+					DBactions.conn.prepareStatement("INSERT INTO sell(price,date,item_id,buyer) VALUES(?,?,?,?)");
+				stm.clearParameters();
+				stm.setBigDecimal(1, sop.getPrice());
+				stm.setDate(2, new Date(100));
+				stm.setInt(3, itemID);
+				stm.setString(4, sop.getBuyer());
+				stm.executeUpdate();
+				// Update item status
+				stm = 
+					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
+				stm.clearParameters();
+				stm.setString(1, "sold");
+				stm.setInt(2, itemID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}
 	}
 }

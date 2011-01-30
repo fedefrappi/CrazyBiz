@@ -60,9 +60,9 @@ public class DBactions {
 		stm.setString(2, "unknown");
 	}
 
-	public static ResultSet getSearchResults(String string) {
-		// TODO Auto-generated method stub
-		return null;
+	public static ResultSet getSearchResults(String string) throws SQLException {
+		PreparedStatement stm = conn.prepareStatement(string);
+		return stm.executeQuery();
 	}
 
 	

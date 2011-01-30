@@ -13,6 +13,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.BaseTheme;
 
 public class Homepage extends VerticalLayout {
+	private CrazybizApplication crazybizApplication;
 	private String username;
 	private Label userLogged;
 	private Button userLogout;
@@ -20,7 +21,8 @@ public class Homepage extends VerticalLayout {
 	private Button insertButton;
 	private Button searchButton;
 	
-	public Homepage(String username) {
+	public Homepage(CrazybizApplication crazybizApplication,String username) {
+		this.crazybizApplication = crazybizApplication;
 		this.username = username;
 		init();
 	}
@@ -35,8 +37,11 @@ public class Homepage extends VerticalLayout {
 		userLogout.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				getWindow().removeComponent(getParent());
-				getWindow().setContent(new LoginView());
+				//getWindow().removeComponent(getParent());
+				//getWindow().setContent(new LoginView());
+				crazybizApplication.getWindow().removeAllComponents();
+				crazybizApplication.setLogin(new LoginView(crazybizApplication));
+				crazybizApplication.getWindow().addComponent(crazybizApplication.getLogin());
 			}
 		});
 		userLogout.setStyleName(BaseTheme.BUTTON_LINK);
@@ -53,14 +58,18 @@ public class Homepage extends VerticalLayout {
         insertButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				getWindow().setContent(new InsertItem(username));
+				crazybizApplication.getWindow().removeComponent(crazybizApplication.getHome());
+				crazybizApplication.setInsert(new InsertItem(crazybizApplication, username));
+				crazybizApplication.getWindow().setContent(crazybizApplication.getInsert());
 			}
 		});
         searchButton = new Button("Search item");
         searchButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				getWindow().setContent(new SearchItem());
+				crazybizApplication.getWindow().removeComponent(crazybizApplication.getHome());
+				crazybizApplication.setSearch(new SearchItem(crazybizApplication, username));
+				crazybizApplication.getWindow().setContent(crazybizApplication.getSearch());
 			}
 		});
         // Horizontal layout for buttons
