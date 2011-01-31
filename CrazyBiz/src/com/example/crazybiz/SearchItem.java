@@ -46,7 +46,7 @@ public class SearchItem extends VerticalLayout {
 		searchAll.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-		        queryString = "SELECT brand.brand_name,model.model_name,item.status " +
+		        queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
         		"FROM brand,model,item " +
         		"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id";
 		        table.removeAllItems();
@@ -56,11 +56,10 @@ public class SearchItem extends VerticalLayout {
 		searchBrand.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				queryString = "SELECT brand.brand_name,model.model_name,item.status " +
+				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
 				"FROM brand,model,item " +
 				"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
-				"AND brand.brand_name = Apple";
-				getWindow().showNotification(queryString);
+				"AND brand.brand_name = '"+filter.getValue().toString()+"'";
 		        table.removeAllItems();
 				table.setContainerDataSource(ResultContainer.create(queryString));
 			}
@@ -68,10 +67,10 @@ public class SearchItem extends VerticalLayout {
 		searchModel.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				queryString = "SELECT brand.brand_name,model.model_name,item.status " +
+				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
 				"FROM brand,model,item " +
 				"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
-				"AND model.model_name = "+filter.getValue().toString();
+				"AND model.model_name = '"+filter.getValue().toString()+"'";
 		        table.removeAllItems();
 				table.setContainerDataSource(ResultContainer.create(queryString));
 			}
@@ -79,10 +78,10 @@ public class SearchItem extends VerticalLayout {
 		searchStatus.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				queryString = "SELECT brand.brand_name,model.model_name,item.status " +
+				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
 				"FROM brand,model,item " +
 				"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
-				"AND item.status = "+filter.getValue().toString();
+				"AND item.status = '"+filter.getValue().toString()+"'";
 		        table.removeAllItems();
 				table.setContainerDataSource(ResultContainer.create(queryString));
 			}
@@ -104,7 +103,7 @@ public class SearchItem extends VerticalLayout {
         table.setColumnCollapsingAllowed(true);        
         
         // Populate from db with Default query
-        queryString = "SELECT brand.brand_name,model.model_name,item.status " +
+        queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
         		"FROM brand,model,item " +
         		"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id";
         table.setContainerDataSource(ResultContainer.create(queryString));
@@ -115,11 +114,12 @@ public class SearchItem extends VerticalLayout {
 			public void valueChange(ValueChangeEvent event) {
                // in multiselect mode, a Set of itemIds is returned,
                 // in singleselect mode the itemId is returned directly
-                Set<?> value = (Set<?>) event.getProperty().getValue();
-                if (null == value || value.size() == 0) {
+                MyResult result = (MyResult)event.getProperty().getValue();
+                if (result == null) {
                     selected.setValue("No selection");
                 } else {
-                    selected.setValue("Selected: " + table.getValue());
+                    selected.setValue("Selected: " + result.getItemID());
+                    // Scatena qualcosa //
                 }
 			}
 		});

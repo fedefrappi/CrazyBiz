@@ -2,15 +2,25 @@ package com.example.crazybiz;
 
 public class MyResult {
 
+	private int itemID;
 	private String brand;
 	private String model;
 	private String status;
 	
-	public MyResult(String brand, String model, String status) {
+	public MyResult(int itemID, String brand, String model, String status) {
 		super();
+		this.itemID = itemID;
 		this.brand = brand;
 		this.model = model;
 		this.status = status;
+	}
+	
+	public int getItemID() {
+		return itemID;
+	}
+
+	public void setItemID(int itemID) {
+		this.itemID = itemID;
 	}
 
 	public void setBrand(String brand) {

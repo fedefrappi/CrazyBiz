@@ -312,7 +312,7 @@ public class InsertItem extends GridLayout{
 			// Insert buy
 			try{
 				stm = 
-					DBactions.conn.prepareStatement("INSERT INTO buy(price,name,phone,email,country,city,item_id,date) VALUES(?,?,?,?,?,?,?)");
+					DBactions.conn.prepareStatement("INSERT INTO buy(price,name,phone,email,country,city,item_id,date) VALUES(?,?,?,?,?,?,?,?)");
 				stm.clearParameters();
 				stm.setBigDecimal(1, bp.getPrice());
 				stm.setString(2, bp.getSellerName());
@@ -321,7 +321,7 @@ public class InsertItem extends GridLayout{
 				stm.setString(5, bp.getSellerCountry());
 				stm.setString(6, bp.getSellerCity());
 				stm.setInt(7, itemID);
-				stm.setDate(8, (Date)bp.getDate());
+				stm.setDate(8, new Date(bp.getDate().getTime()));
 				stm.executeUpdate();
 				// Update item status
 				stm = 
@@ -359,24 +359,26 @@ public class InsertItem extends GridLayout{
 			for(ProposalEntryComponent proposal : op.getProposalComponent().getEntries()){
 				try{
 					stm = 
-						DBactions.conn.prepareStatement("INSERT INTO proposal(price,user,message,item_id) VALUES(?,?,?,?)");
+						DBactions.conn.prepareStatement("INSERT INTO proposal(price,user,message,item_id,date) VALUES(?,?,?,?)");
 					stm.clearParameters();
 					stm.setBigDecimal(1, proposal.getPrice());
 					stm.setString(2, proposal.getUser());
 					stm.setString(3, proposal.getMessage());
 					stm.setInt(4, itemID);
+					stm.setDate(5,new Date(bp.getDate().getTime()));
 					stm.executeUpdate();
 				} catch (MySQLIntegrityConstraintViolationException e) {}
 			}
 			for(PostEntryComponent post : op.getPostComponent().getEntries()){
 				try{
 					stm = 
-						DBactions.conn.prepareStatement("INSERT INTO post(price,source,message,item_id) VALUES(?,?,?,?)");
+						DBactions.conn.prepareStatement("INSERT INTO post(price,source,message,item_id,date) VALUES(?,?,?,?)");
 					stm.clearParameters();
 					stm.setBigDecimal(1, post.getPrice());
 					stm.setString(2, post.getSource());
 					stm.setString(3, post.getMessage());
 					stm.setInt(4, itemID);
+					stm.setDate(5,new Date(bp.getDate().getTime()));
 					stm.executeUpdate();
 					
 				} catch (MySQLIntegrityConstraintViolationException e) {}
@@ -397,7 +399,7 @@ public class InsertItem extends GridLayout{
 					DBactions.conn.prepareStatement("INSERT INTO sell(price,date,item_id,buyer) VALUES(?,?,?,?)");
 				stm.clearParameters();
 				stm.setBigDecimal(1, sop.getPrice());
-				stm.setDate(2, new Date(100));
+				stm.setDate(2, new Date(sop.getDate().getTime()));
 				stm.setInt(3, itemID);
 				stm.setString(4, sop.getBuyer());
 				stm.executeUpdate();

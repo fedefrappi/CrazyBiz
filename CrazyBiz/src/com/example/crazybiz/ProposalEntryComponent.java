@@ -61,10 +61,8 @@ public class ProposalEntryComponent extends VerticalLayout implements Property.V
 	}
 	
 	public Date getDate() {
-		DateFormat dateFormatter = DateFormat.getDateInstance(DateFormat.SHORT);
-        String dateOut = dateFormatter.format(date);
-		return new Date(dateOut);
-		//return new Date(date.getValue().toString());
+		Date d = (Date)date.getValue();
+		return d;
 	}
 
 }

@@ -65,10 +65,8 @@ public class BoughtPanel extends VerticalLayout implements Property.ValueChangeL
 	}
 
 	public Date getDate() {
-		DateFormat dateFormatter = DateFormat.getDateInstance(DateFormat.SHORT);
-        String dateOut = dateFormatter.format(date);
-		return new Date(dateOut);
-		//return new Date(date.getValue().toString());
+		Date d = (Date)date.getValue();
+		return d;
 	}
 
 	public String getSellerPhone() {
