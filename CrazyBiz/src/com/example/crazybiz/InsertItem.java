@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
@@ -40,15 +42,23 @@ public class InsertItem extends GridLayout{
 	private Button saveButton;
 	private VerticalLayout leftLayout;
 	
+	// Right Panels
 	private WatchingPanel wp;
 	private BoughtPanel bp;
 	private ShippedPanel shp;
 	private OnSalePanel op;
 	private SoldPanel sop;
 	
+	// DB variables
 	private int brandID;
 	private int modelID;
 	private int itemID;
+	private int watchingID;
+	private int buyID;
+	private int shippingID;
+	private ArrayList<Integer> proposalIDs;
+	private ArrayList<Integer> postIDs;
+	private int soldID;
 
 	
 	public InsertItem(CrazybizApplication crazybizApplication, String username) {
@@ -56,19 +66,21 @@ public class InsertItem extends GridLayout{
 		this.crazybizApplication = crazybizApplication;
 		this.username = username;
 		
+		// Default value: -1 , object not stored in the db.
 		brandID = -1;
 		modelID = -1;
 		itemID = -1;
+		watchingID = -1;
+		buyID = -1;
+		shippingID = -1;
+		proposalIDs = new ArrayList<Integer>();
+		postIDs = new ArrayList<Integer>();
+		soldID = -1;
 		
-		try {
-			init();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		init();
 	}
 	
-	private void init() throws SQLException {
+	private void init() {
 		setMargin(true);
 		setSpacing(true);
 		setSizeFull();
@@ -80,7 +92,6 @@ public class InsertItem extends GridLayout{
 		backLayout.setMargin(false,true,false,false);
 		backButton = new Button("Back");
 		backButton.addListener(new ClickListener() {
-			@Override
 			public void buttonClick(ClickEvent event) {
 				crazybizApplication.getWindow().removeAllComponents();
 				crazybizApplication.setHome(new Homepage(crazybizApplication, username));
@@ -90,7 +101,10 @@ public class InsertItem extends GridLayout{
 		backButton.setStyleName(BaseTheme.BUTTON_LINK);
 		backLayout.addComponent(backButton);
 
-		List<Brand> brandList = DBactions.getBrands();
+		List<Brand> brandList = new ArrayList<Brand>();
+		try {
+			brandList = DBactions.getBrands();
+		} catch (SQLException e1) {e1.printStackTrace();}
 		for(Brand currentBrand : brandList){
 			brand.addItem(currentBrand.getName());			
 		}
@@ -98,7 +112,6 @@ public class InsertItem extends GridLayout{
 		brand.setFilteringMode(Filtering.FILTERINGMODE_STARTSWITH);
 		brand.setImmediate(true);
 		brand.addListener(new ValueChangeListener() {
-			@Override
 			public void valueChange(ValueChangeEvent event) {
 				String selectedBrand = event.getProperty().toString();
 				List<Model> filteredModels;
@@ -116,7 +129,6 @@ public class InsertItem extends GridLayout{
 		brand.setNullSelectionAllowed(false);
 		brand.setNewItemsAllowed(true);
 		brand.setNewItemHandler(new NewItemHandler() {
-			@Override
 			public void addNewItem(String newItemCaption) {
 				brand.addItem(newItemCaption);
 				brand.setValue(newItemCaption);
@@ -129,7 +141,6 @@ public class InsertItem extends GridLayout{
 		model.setNullSelectionAllowed(false);
 		model.setNewItemsAllowed(true);
 		model.setNewItemHandler(new NewItemHandler() {
-			@Override
 			public void addNewItem(String newItemCaption) {
 				model.addItem(newItemCaption);
 				model.setValue(newItemCaption);
@@ -145,7 +156,6 @@ public class InsertItem extends GridLayout{
 
 		saveButton = new Button("Save item");
 		saveButton.addListener(new ClickListener() {		
-			@Override
 			public void buttonClick(ClickEvent event) {
 				if(wp == null){
 					wp = new WatchingPanel();
@@ -164,10 +174,7 @@ public class InsertItem extends GridLayout{
 				}
 				try {
 					executeQuery();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				} catch (SQLException e) {e.printStackTrace();}
 			}
 		});
 		
@@ -181,9 +188,7 @@ public class InsertItem extends GridLayout{
 		leftLayout.addComponent(saveButton);
 		
 		this.addComponent(leftLayout,0,0);
-		
 	}
-	
 
 	public void showWatchingPanel(){
 		this.removeComponent(1,0);
@@ -222,62 +227,88 @@ public class InsertItem extends GridLayout{
 	}
 	
 	protected void executeQuery() throws SQLException{
-		
 		PreparedStatement stm = null;
 		ResultSet res = null;
-
+		
+		// BRAND - OK
+		// Check if selected brand is in the db
+		stm = DBactions.conn.prepareStatement("SELECT brand_id FROM brand WHERE brand_name=?");
+		stm.setString(1, brand.getValue().toString());
+		ResultSet rs = stm.executeQuery();
+		if(rs.next()){
+			brandID = rs.getInt(1);
+		}
 		if(brandID==-1){
 			// Insert brand
 			try {
 				stm = DBactions.conn.prepareStatement("INSERT INTO brand(brand_name,brand_website) VALUES(?,?);",Statement.RETURN_GENERATED_KEYS);
+				stm.clearParameters();
 				stm.setString(1, brand.getValue().toString());
 				stm.setString(2, "unknown");
 				stm.executeUpdate();
+				ResultSet keys = stm.getGeneratedKeys();
+				if(keys.next()){
+					brandID = keys.getInt(1);
+				}
 			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}else{
+			// Update brand
 			try {
-				stm = DBactions.conn.prepareStatement("SELECT brand_id FROM brand WHERE brand_name=?;");
+				stm = DBactions.conn.prepareStatement("UPDATE brand SET brand_name=? WHERE brand_id=?;");
 				stm.clearParameters();
 				stm.setString(1, brand.getValue().toString());
-				res = stm.executeQuery();
-				while(res.next()){
-					brandID = res.getInt(1);
-				}
-			} catch (SQLException e) {
-			}
+				stm.setInt(2, brandID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
 		
+		//MODEL - OK
+		// Check if selected model is in the db
+		stm = DBactions.conn.prepareStatement("SELECT model_id FROM model,brand WHERE model_name=? AND model.brand_id=?");
+		stm.setString(1, model.getValue().toString());
+		stm.setInt(2, brandID);
+		rs = stm.executeQuery();
+		if(rs.next()){
+			modelID = rs.getInt(1);
+		}
 		if(modelID==-1){
 			// Insert model
 			try{
 				stm = 
-					DBactions.conn.prepareStatement("INSERT INTO model(brand_id,model_name,model_price) VALUES(?,?,?)");
+					DBactions.conn.prepareStatement("INSERT INTO model(brand_id,model_name,model_price) VALUES(?,?,?)",Statement.RETURN_GENERATED_KEYS);
 				stm.clearParameters();
 				stm.setInt(1, brandID);
 				stm.setString(2, model.getValue().toString());
 				stm.setBigDecimal(3, BigDecimal.valueOf(0.0));
 				stm.executeUpdate();
+				ResultSet keys = stm.getGeneratedKeys();
+				if(keys.next()){
+					modelID = keys.getInt(1);
+				}
 			} catch (MySQLIntegrityConstraintViolationException e) {}
-	
-			try{
-				stm = DBactions.conn.prepareStatement("SELECT model_id FROM model WHERE model_name=?;");
+		}else{
+			// Update model
+			try {
+				stm = DBactions.conn.prepareStatement("UPDATE model SET model_name=? WHERE model_id=?;");
 				stm.clearParameters();
 				stm.setString(1, model.getValue().toString());
-				res = stm.executeQuery();
-				while(res.next()){
-					modelID = res.getInt(1);
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+				stm.setInt(2, modelID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
 		
+		// ITEM - OK
 		if(itemID==-1){
 			// Insert item
 			try{
 				stm = 
 					DBactions.conn.prepareStatement("INSERT INTO item(source,model_id,status) VALUES(?,?,?)",Statement.RETURN_GENERATED_KEYS);
 				stm.clearParameters();
-				stm.setString(1, source.getValue().toString());
+				if(source.getValue() == null){
+					stm.setNull(1, Types.VARCHAR);
+				}else{
+					stm.setString(1, source.getValue().toString());
+				}
 				stm.setInt(2, modelID);
 				stm.setString(3, "disabled");
 				stm.executeUpdate();
@@ -286,18 +317,40 @@ public class InsertItem extends GridLayout{
 					itemID = keys.getInt(1);
 				}
 			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}else{
+			// Update item
+			try {
+				stm = DBactions.conn.prepareStatement("UPDATE item SET source=? WHERE item_id=?;");
+				stm.clearParameters();
+				if(source.getValue() == null){
+					stm.setNull(1, Types.VARCHAR);
+				}else{
+					stm.setString(1, source.getValue().toString());
+				}
+				stm.setInt(2, itemID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
-
-		if(status.getWatchingCheckbox().booleanValue()){
+		
+		// WATCHING - OK
+		if(status.getWatchingCheckbox().booleanValue() && watchingID == -1){
 			// Insert watching
 			try{
 				stm = 
-					DBactions.conn.prepareStatement("INSERT INTO watched(price,fdpin,item_id) VALUES(?,?,?)");
+					DBactions.conn.prepareStatement("INSERT INTO watched(price,fdpin,item_id) VALUES(?,?,?)",Statement.RETURN_GENERATED_KEYS);
 				stm.clearParameters();
-				stm.setBigDecimal(1, wp.getPrice());
+				if(wp.getPrice() == null){
+					stm.setNull(1, Types.DECIMAL);
+				}else{
+					stm.setBigDecimal(1, wp.getPrice());
+				}
 				stm.setBoolean(2, wp.getFdpin());
 				stm.setInt(3, itemID);
 				stm.executeUpdate();
+				ResultSet keys = stm.getGeneratedKeys();
+				if(keys.next()){
+					watchingID = keys.getInt(1);
+				}
 				// Update item status
 				stm = 
 					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
@@ -306,23 +359,66 @@ public class InsertItem extends GridLayout{
 				stm.setInt(2, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}else if(status.getWatchingCheckbox().booleanValue()){
+			// Update watching
+			try {
+				stm = DBactions.conn.prepareStatement("UPDATE watched SET price=?,fdpin=? WHERE id=?;");
+				stm.clearParameters();
+				if(wp.getPrice() == null){
+					stm.setNull(1, Types.DECIMAL);
+				}else{
+					stm.setBigDecimal(1, wp.getPrice());
+				}
+				stm.setBoolean(2, wp.getFdpin());
+				stm.setInt(3, watchingID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
-
-		if(status.getBoughtCheckbox().booleanValue()){
+		
+		// BUY - OK
+		if(status.getBoughtCheckbox().booleanValue() && buyID == -1){
 			// Insert buy
 			try{
 				stm = 
-					DBactions.conn.prepareStatement("INSERT INTO buy(price,name,phone,email,country,city,item_id,date) VALUES(?,?,?,?,?,?,?,?)");
+					DBactions.conn.prepareStatement("INSERT INTO buy(price,name,phone,email,country,city,item_id,date) VALUES(?,?,?,?,?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
 				stm.clearParameters();
-				stm.setBigDecimal(1, bp.getPrice());
-				stm.setString(2, bp.getSellerName());
-				stm.setString(3, bp.getSellerPhone());
-				stm.setString(4, bp.getSellerEmail());
-				stm.setString(5, bp.getSellerCountry());
-				stm.setString(6, bp.getSellerCity());
+				if(bp.getPrice() == null){
+					stm.setNull(1, Types.DECIMAL);
+				}else{
+					stm.setBigDecimal(1, bp.getPrice());
+				}
+				if(bp.getSellerName() == null){
+					stm.setNull(2, Types.VARCHAR);
+				}else{
+					stm.setString(2, bp.getSellerName());
+				}
+				if(bp.getSellerPhone() == null){
+					stm.setNull(3, Types.VARCHAR);
+				}else{
+					stm.setString(3, bp.getSellerPhone());
+				}
+				if(bp.getSellerEmail() == null){
+					stm.setNull(4, Types.VARCHAR);
+				}else{
+					stm.setString(4, bp.getSellerEmail());
+				}
+				if(bp.getSellerCountry() == null){
+					stm.setNull(5, Types.VARCHAR);
+				}else{
+					stm.setString(5, bp.getSellerCountry());
+				}
+				if(bp.getSellerCity() == null){
+					stm.setNull(6, Types.VARCHAR);
+				}else{
+					stm.setString(6, bp.getSellerCity());
+				}
 				stm.setInt(7, itemID);
 				stm.setDate(8, new Date(bp.getDate().getTime()));
 				stm.executeUpdate();
+				ResultSet keys = stm.getGeneratedKeys();
+				if(keys.next()){
+					buyID = keys.getInt(1);
+				}
 				// Update item status
 				stm = 
 					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
@@ -331,19 +427,74 @@ public class InsertItem extends GridLayout{
 				stm.setInt(2, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}else if(status.getBoughtCheckbox().booleanValue()){
+			// Update buy
+			try {
+				stm = DBactions.conn.prepareStatement("UPDATE buy SET price=?,name=?,phone=?,email=?,country=?,city=?,date=? WHERE id=?;");
+				if(bp.getPrice() == null){
+					stm.setNull(1, Types.DECIMAL);
+				}else{
+					stm.setBigDecimal(1, bp.getPrice());
+				}
+				if(bp.getSellerName() == null){
+					stm.setNull(2, Types.VARCHAR);
+				}else{
+					stm.setString(2, bp.getSellerName());
+				}
+				if(bp.getSellerPhone() == null){
+					stm.setNull(3, Types.VARCHAR);
+				}else{
+					stm.setString(3, bp.getSellerPhone());
+				}
+				if(bp.getSellerEmail() == null){
+					stm.setNull(4, Types.VARCHAR);
+				}else{
+					stm.setString(4, bp.getSellerEmail());
+				}
+				if(bp.getSellerCountry() == null){
+					stm.setNull(5, Types.VARCHAR);
+				}else{
+					stm.setString(5, bp.getSellerCountry());
+				}
+				if(bp.getSellerCity() == null){
+					stm.setNull(6, Types.VARCHAR);
+				}else{
+					stm.setString(6, bp.getSellerCity());
+				}
+				stm.setDate(7, new Date(bp.getDate().getTime()));
+				stm.setInt(8, buyID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
 		
-		if(status.getShippedCheckbox().booleanValue()){
+		// SHIPPING - OK
+		if(status.getShippedCheckbox().booleanValue() && shippingID == -1){
 			// Insert shipping
 			try{
 				stm = 
-					DBactions.conn.prepareStatement("INSERT INTO shipping(tracking,to,company,item_id) VALUES(?,?,?,?)");
+					DBactions.conn.prepareStatement("INSERT INTO shipping(tracking,recipient,company,item_id) VALUES(?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
 				stm.clearParameters();
-				stm.setString(1, shp.getTracking());
-				stm.setString(2, shp.getTo());
-				stm.setString(3, shp.getCompany());
+				if(shp.getTracking() == null){
+					stm.setNull(1, Types.VARCHAR);
+				}else{
+					stm.setString(1, shp.getTracking());
+				}
+				if(shp.getRecipient() == null){
+					stm.setNull(2, Types.VARCHAR);
+				}else{
+					stm.setString(2, shp.getRecipient());
+				}
+				if(shp.getCompany() == null){
+					stm.setNull(3, Types.VARCHAR);
+				}else{
+					stm.setString(3, shp.getCompany());
+				}
 				stm.setInt(4, itemID);
 				stm.executeUpdate();
+				ResultSet keys = stm.getGeneratedKeys();
+				if(keys.next()){
+					shippingID = keys.getInt(1);
+				}
 				// Update item status
 				stm = 
 					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
@@ -352,36 +503,149 @@ public class InsertItem extends GridLayout{
 				stm.setInt(2, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}else if(status.getShippedCheckbox().booleanValue()){
+			// Update shipping
+			try {
+				stm = DBactions.conn.prepareStatement("UPDATE shipping SET tracking=?,recipient=?,company=? WHERE id=?;");
+				if(shp.getTracking() == null){
+					stm.setNull(1, Types.VARCHAR);
+				}else{
+					stm.setString(1, shp.getTracking());
+				}
+				if(shp.getRecipient() == null){
+					stm.setNull(2, Types.VARCHAR);
+				}else{
+					stm.setString(2, shp.getRecipient());
+				}
+				if(shp.getCompany() == null){
+					stm.setNull(3, Types.VARCHAR);
+				}else{
+					stm.setString(3, shp.getCompany());
+				}
+				stm.setInt(4, shippingID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
 		
+		// ON SALE - OK
 		if(status.getOnsaleCheckbox().booleanValue()){
 			// Insert on sale
-			for(ProposalEntryComponent proposal : op.getProposalComponent().getEntries()){
-				try{
-					stm = 
-						DBactions.conn.prepareStatement("INSERT INTO proposal(price,user,message,item_id,date) VALUES(?,?,?,?)");
-					stm.clearParameters();
-					stm.setBigDecimal(1, proposal.getPrice());
-					stm.setString(2, proposal.getUser());
-					stm.setString(3, proposal.getMessage());
-					stm.setInt(4, itemID);
-					stm.setDate(5,new Date(bp.getDate().getTime()));
-					stm.executeUpdate();
-				} catch (MySQLIntegrityConstraintViolationException e) {}
+			for(int k=0; k<op.getProposalComponent().getEntries().size(); k++){
+				if(k>=proposalIDs.size()){
+					proposalIDs.add(-1);
+				}
+				if(proposalIDs.get(k) == -1){
+					try{
+						stm = 
+							DBactions.conn.prepareStatement("INSERT INTO proposal(price,user,message,item_id,date) VALUES(?,?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
+						stm.clearParameters();
+						if(op.getProposalComponent().getEntries().get(k).getPrice() == null){
+							stm.setNull(1, Types.VARCHAR);
+						}else{
+							stm.setBigDecimal(1, op.getProposalComponent().getEntries().get(k).getPrice());
+						}
+						if(op.getProposalComponent().getEntries().get(k).getUser() == null){
+							stm.setNull(2, Types.VARCHAR);
+						}else{
+							stm.setString(2, op.getProposalComponent().getEntries().get(k).getUser());
+						}
+						if(op.getProposalComponent().getEntries().get(k).getMessage() == null){
+							stm.setNull(3, Types.VARCHAR);
+						}else{
+							stm.setString(3, op.getProposalComponent().getEntries().get(k).getMessage());
+						}
+						stm.setInt(4, itemID);
+						stm.setDate(5,new Date(op.getProposalComponent().getEntries().get(k).getDate().getTime()));
+						stm.executeUpdate();
+						ResultSet keys = stm.getGeneratedKeys();
+						if(keys.next()){
+							proposalIDs.set(k, keys.getInt(1));
+						}
+					} catch (MySQLIntegrityConstraintViolationException e) {}
+				}else{
+					// Update proposal
+					try {
+						stm = DBactions.conn.prepareStatement("UPDATE proposal SET price=?,user=?,message=?,date=? WHERE id=?;");
+						stm.clearParameters();
+						if(op.getProposalComponent().getEntries().get(k).getPrice() == null){
+							stm.setNull(1, Types.VARCHAR);
+						}else{
+							stm.setBigDecimal(1, op.getProposalComponent().getEntries().get(k).getPrice());
+						}
+						if(op.getProposalComponent().getEntries().get(k).getUser() == null){
+							stm.setNull(2, Types.VARCHAR);
+						}else{
+							stm.setString(2, op.getProposalComponent().getEntries().get(k).getUser());
+						}
+						if(op.getProposalComponent().getEntries().get(k).getMessage() == null){
+							stm.setNull(3, Types.VARCHAR);
+						}else{
+							stm.setString(3, op.getProposalComponent().getEntries().get(k).getMessage());
+						}
+						stm.setDate(4,new Date(op.getProposalComponent().getEntries().get(k).getDate().getTime()));
+						stm.setInt(5, proposalIDs.get(k));
+						stm.executeUpdate();
+					} catch (MySQLIntegrityConstraintViolationException e) {}
+				}
 			}
-			for(PostEntryComponent post : op.getPostComponent().getEntries()){
-				try{
-					stm = 
-						DBactions.conn.prepareStatement("INSERT INTO post(price,source,message,item_id,date) VALUES(?,?,?,?)");
-					stm.clearParameters();
-					stm.setBigDecimal(1, post.getPrice());
-					stm.setString(2, post.getSource());
-					stm.setString(3, post.getMessage());
-					stm.setInt(4, itemID);
-					stm.setDate(5,new Date(bp.getDate().getTime()));
-					stm.executeUpdate();
-					
-				} catch (MySQLIntegrityConstraintViolationException e) {}
+			for(int k=0; k<op.getPostComponent().getEntries().size(); k++){
+				if(k>=postIDs.size()){
+					postIDs.add(-1);
+				}
+				if(postIDs.get(k) == -1){
+					try{
+						stm = 
+							DBactions.conn.prepareStatement("INSERT INTO post(price,source,message,item_id,date) VALUES(?,?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
+						stm.clearParameters();
+						if(op.getPostComponent().getEntries().get(k).getPrice() == null){
+							stm.setNull(1, Types.VARCHAR);
+						}else{
+							stm.setBigDecimal(1, op.getPostComponent().getEntries().get(k).getPrice());
+						}
+						if(op.getPostComponent().getEntries().get(k).getSource() == null){
+							stm.setNull(2, Types.VARCHAR);
+						}else{
+							stm.setString(2, op.getPostComponent().getEntries().get(k).getSource());
+						}
+						if(op.getPostComponent().getEntries().get(k).getMessage() == null){
+							stm.setNull(3, Types.VARCHAR);
+						}else{
+							stm.setString(3, op.getPostComponent().getEntries().get(k).getMessage());
+						}
+						stm.setInt(4, itemID);
+						stm.setDate(5,new Date(op.getPostComponent().getEntries().get(k).getDate().getTime()));
+						stm.executeUpdate();
+						ResultSet keys = stm.getGeneratedKeys();
+						if(keys.next()){
+							postIDs.set(k, keys.getInt(1));
+						}
+					} catch (MySQLIntegrityConstraintViolationException e) {}
+				}
+				else{
+					// Update post
+					try {
+						stm = DBactions.conn.prepareStatement("UPDATE post SET price=?,source=?,message=?,date=? WHERE id=?;");
+						stm.clearParameters();
+						if(op.getPostComponent().getEntries().get(k).getPrice() == null){
+							stm.setNull(1, Types.VARCHAR);
+						}else{
+							stm.setBigDecimal(1, op.getPostComponent().getEntries().get(k).getPrice());
+						}
+						if(op.getPostComponent().getEntries().get(k).getSource() == null){
+							stm.setNull(2, Types.VARCHAR);
+						}else{
+							stm.setString(2, op.getPostComponent().getEntries().get(k).getSource());
+						}
+						if(op.getPostComponent().getEntries().get(k).getMessage() == null){
+							stm.setNull(3, Types.VARCHAR);
+						}else{
+							stm.setString(3, op.getPostComponent().getEntries().get(k).getMessage());
+						}
+						stm.setDate(4,new Date(op.getPostComponent().getEntries().get(k).getDate().getTime()));
+						stm.setInt(5, postIDs.get(k));
+						stm.executeUpdate();
+					} catch (MySQLIntegrityConstraintViolationException e) {}
+				}
 			}
 			// Update item status
 			stm = 
@@ -392,23 +656,54 @@ public class InsertItem extends GridLayout{
 			stm.executeUpdate();
 		}
 		
-		if(status.getSoldCheckbox().booleanValue()){
+		// SELL - OK
+		if(status.getSoldCheckbox().booleanValue() && soldID == -1){
 			// Insert sell
 			try{
 				stm = 
-					DBactions.conn.prepareStatement("INSERT INTO sell(price,date,item_id,buyer) VALUES(?,?,?,?)");
+					DBactions.conn.prepareStatement("INSERT INTO sell(price,date,item_id,buyer) VALUES(?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
 				stm.clearParameters();
-				stm.setBigDecimal(1, sop.getPrice());
+				if(sop.getPrice() == null){
+					stm.setNull(1, Types.DECIMAL);
+				}else{
+					stm.setBigDecimal(1, sop.getPrice());
+				}
 				stm.setDate(2, new Date(sop.getDate().getTime()));
 				stm.setInt(3, itemID);
-				stm.setString(4, sop.getBuyer());
+				if(sop.getBuyer() == null){
+					stm.setNull(4, Types.DECIMAL);
+				}else{
+					stm.setString(4, sop.getBuyer());
+				}
 				stm.executeUpdate();
+				ResultSet keys = stm.getGeneratedKeys();
+				if(keys.next()){
+					soldID = keys.getInt(1);
+				}
 				// Update item status
 				stm = 
 					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
 				stm.clearParameters();
 				stm.setString(1, "sold");
 				stm.setInt(2, itemID);
+				stm.executeUpdate();
+			} catch (MySQLIntegrityConstraintViolationException e) {}
+		}else if(status.getSoldCheckbox().booleanValue()){
+			// Update sell
+			try {
+				stm = DBactions.conn.prepareStatement("UPDATE sell SET price=?,date=?,buyer=? WHERE id=?;");
+				if(sop.getPrice() == null){
+					stm.setNull(1, Types.DECIMAL);
+				}else{
+					stm.setBigDecimal(1, sop.getPrice());
+				}
+				stm.setDate(2, new Date(sop.getDate().getTime()));
+				if(sop.getBuyer() == null){
+					stm.setNull(3, Types.DECIMAL);
+				}else{
+					stm.setString(3, sop.getBuyer());
+				}
+				stm.setInt(4, soldID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}

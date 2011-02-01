@@ -46,8 +46,10 @@ public class SoldPanel extends VerticalLayout implements Property.ValueChangeLis
 	}
 
 	public Date getDate() {
-		Date d = (Date)date.getValue();
-		return d;
+		if(date.getValue() == null){
+			return new Date(System.currentTimeMillis());
+		}
+		return (Date)date.getValue();
 	}
 
 	public String getBuyer() {

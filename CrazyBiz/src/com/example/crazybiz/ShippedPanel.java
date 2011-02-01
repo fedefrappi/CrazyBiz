@@ -7,16 +7,16 @@ public class ShippedPanel extends VerticalLayout{
 
 	private TextField company;
 	private TextField tracking;
-	private TextField to;
+	private TextField recipient;
 		
 	public ShippedPanel() {        
         company = new TextField("Shipping Company");
         tracking = new TextField("Tracking");
-        to = new TextField("To");
+        recipient = new TextField("To");
         
         addComponent(company);
         addComponent(tracking);
-        addComponent(to);
+        addComponent(recipient);
 	}
 
 	public String getCompany() {
@@ -27,8 +27,8 @@ public class ShippedPanel extends VerticalLayout{
 		return tracking.getValue().toString();
 	}
 
-	public String getTo() {
-		return to.getValue().toString();
+	public String getRecipient() {
+		return recipient.getValue().toString();
 	}
 	
 }
