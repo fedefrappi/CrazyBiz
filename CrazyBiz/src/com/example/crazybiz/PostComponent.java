@@ -31,4 +31,9 @@ public class PostComponent extends VerticalLayout{
 	public List<PostEntryComponent> getEntries() {
 		return entries;
 	}
+	
+	public void addEntry(PostEntryComponent newPec){
+		entries.add(newPec);
+		addComponent(newPec);
+	}
 }

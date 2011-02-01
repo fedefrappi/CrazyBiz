@@ -31,4 +31,16 @@ public class ShippedPanel extends VerticalLayout{
 		return recipient.getValue().toString();
 	}
 	
+	public void setCompany(String newCompany) {
+		this.company.setValue(newCompany);
+	}
+	
+	public void setTracking(String newTracking) {
+		this.tracking.setValue(newTracking);
+	}
+	
+	public void setRecipient(String newRecipient) {
+		this.recipient.setValue(newRecipient);
+	}
+	
 }

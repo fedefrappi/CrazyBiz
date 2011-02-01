@@ -31,4 +31,9 @@ public class ProposalComponent extends VerticalLayout{
 	public List<ProposalEntryComponent> getEntries() {
 		return entries;
 	}
+	
+	public void addEntry(ProposalEntryComponent newPec){
+		entries.add(newPec);
+		addComponent(newPec);
+	}
 }

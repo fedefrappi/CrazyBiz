@@ -36,7 +36,6 @@ public class InsertItem extends GridLayout{
 	private ComboBox brand = new ComboBox("Brand");
 	private ComboBox model = new ComboBox("Model");
 	private TextField source;
-	private ImageUpload iu;
 	private StatusManager status;
 	private Button backButton;
 	private Button saveButton;
@@ -61,7 +60,7 @@ public class InsertItem extends GridLayout{
 	private int soldID;
 
 	
-	public InsertItem(CrazybizApplication crazybizApplication, String username) {
+	public InsertItem(final CrazybizApplication crazybizApplication, final String username) {
 		super(2,1);
 		this.crazybizApplication = crazybizApplication;
 		this.username = username;
@@ -78,6 +77,171 @@ public class InsertItem extends GridLayout{
 		soldID = -1;
 		
 		init();
+		
+		// backButton listener: back to the homepage
+		backButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				crazybizApplication.getWindow().removeAllComponents();
+				crazybizApplication.setHome(new Homepage(crazybizApplication, username));
+				crazybizApplication.getWindow().setContent(crazybizApplication.getHome());
+			}
+		});
+	}
+	
+	public InsertItem(final CrazybizApplication crazybizApplication, final String username, int itemID){
+		// Constructor to use when coming from Search
+		super(2,1);
+		this.crazybizApplication = crazybizApplication;
+		this.username = username;
+		// Default value: -1 , object not stored in the db.
+		brandID = -1;
+		modelID = -1;
+		watchingID = -1;
+		buyID = -1;
+		shippingID = -1;
+		proposalIDs = new ArrayList<Integer>();
+		postIDs = new ArrayList<Integer>();
+		soldID = -1;
+		
+		this.itemID = itemID;
+		init();
+		
+		// backButton listener: back to the search view
+		backButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				crazybizApplication.getWindow().removeAllComponents();
+				crazybizApplication.getWindow().setContent(crazybizApplication.getSearch());
+			}
+		});
+		
+		// Fill all the fields
+		try {
+			// Overview
+			PreparedStatement stm = DBactions.conn.prepareStatement(
+					"SELECT brand.brand_name,model.model_name,item.source,brand.brand_id,model.model_id " +
+					"FROM item,model,brand " +
+					"WHERE item.item_id=? AND item.model_id=model.model_id AND model.brand_id=brand.brand_id;");
+			stm.setInt(1, itemID);
+			ResultSet rs = stm.executeQuery();
+			if(rs.next()){
+				brand.setValue(rs.getString(1));
+				model.setValue(rs.getString(2));
+				source.setValue(rs.getString(3));
+				this.brandID = rs.getInt(4);
+				this.modelID = rs.getInt(5);
+			}
+			// Watching panel
+			stm = DBactions.conn.prepareStatement(
+					"SELECT watched.price,watched.fdpin " +
+					"FROM watched " +
+					"WHERE watched.item_id=?;",Statement.RETURN_GENERATED_KEYS);
+			stm.setInt(1, itemID);
+			rs = stm.executeQuery();
+			if(rs.next()){
+				wp.setPrice(rs.getBigDecimal(1));
+				wp.setPriceOptionsSelection(rs.getBoolean(2));
+				status.getWatchingCheckbox().setEnabled(true);
+			}
+			ResultSet keys = stm.getGeneratedKeys();
+			if(keys.next()){
+				watchingID = keys.getInt(1);
+			}
+			// Buy panel
+			stm = DBactions.conn.prepareStatement(
+					"SELECT price,name,phone,email,country,city,date " +
+					"FROM buy " +
+					"WHERE item_id=?;",Statement.RETURN_GENERATED_KEYS);
+			stm.setInt(1, itemID);
+			rs = stm.executeQuery();
+			if(rs.next()){
+				bp.setPrice(rs.getBigDecimal(1));
+				bp.setSellerName(rs.getString(2));
+				bp.setSellerPhone(rs.getString(3));
+				bp.setSellerEmail(rs.getString(4));
+				bp.setSellerCountry(rs.getString(5));
+				bp.setSellerCity(rs.getString(6));
+				bp.setDate(rs.getDate(7));
+				status.getBoughtCheckbox().setEnabled(true);
+			}
+			keys = stm.getGeneratedKeys();
+			if(keys.next()){
+				buyID = keys.getInt(1);
+			}
+			// Shipping panel
+			stm = DBactions.conn.prepareStatement(
+					"SELECT tracking,recipient,company " +
+					"FROM shipping " +
+					"WHERE item_id=?;",Statement.RETURN_GENERATED_KEYS);
+			stm.setInt(1, itemID);
+			rs = stm.executeQuery();
+			if(rs.next()){
+				shp.setTracking(rs.getString(1));
+				shp.setRecipient(rs.getString(2));
+				shp.setCompany(rs.getString(3));
+				status.getShippedCheckbox().setEnabled(true);
+			}
+			keys = stm.getGeneratedKeys();
+			if(keys.next()){
+				shippingID = keys.getInt(1);
+			}
+			// Posts
+			int existingPosts = 0;
+			stm = DBactions.conn.prepareStatement(
+					"SELECT price,source,message,date " +
+					"FROM post " +
+					"WHERE item_id=?;");
+			stm.setInt(1, itemID);
+			rs = stm.executeQuery();
+			while(rs.next()){
+				PostEntryComponent tmp = new PostEntryComponent();
+				tmp.setPrice(rs.getBigDecimal(1));
+				tmp.setSource(rs.getString(2));
+				tmp.setMessage(rs.getString(3));
+				tmp.setDate(rs.getDate(4));
+				postIDs.add(rs.getInt(5));
+				op.getPostComponent().addEntry(tmp);
+				existingPosts++;
+			}
+			// Proposals
+			int existingProposals = 0;
+			stm = DBactions.conn.prepareStatement(
+					"SELECT price,user,message,date,id " +
+					"FROM proposal " +
+					"WHERE item_id=?;");
+			stm.setInt(1, itemID);
+			rs = stm.executeQuery();
+			while(rs.next()){
+				ProposalEntryComponent tmp = new ProposalEntryComponent();
+				tmp.setPrice(rs.getBigDecimal(1));
+				tmp.setUser(rs.getString(2));
+				tmp.setMessage(rs.getString(3));
+				tmp.setDate(rs.getDate(4));
+				proposalIDs.add(rs.getInt(5));
+				op.getProposalComponent().addEntry(tmp);
+				existingProposals++;
+			}
+
+			if(existingPosts>0 || existingProposals>0){
+				status.getOnsaleCheckbox().setEnabled(true);
+			}
+			// Sold panel
+			stm = DBactions.conn.prepareStatement(
+					"SELECT price,date,buyer " +
+					"FROM sell " +
+					"WHERE item_id=?;",Statement.RETURN_GENERATED_KEYS);
+			stm.setInt(1, itemID);
+			rs = stm.executeQuery();
+			if(rs.next()){
+				sop.setPrice(rs.getBigDecimal(1));
+				sop.setDate(rs.getDate(2));
+				sop.setBuyer(rs.getString(3));
+				status.getSoldCheckbox().setEnabled(true);
+			}
+			keys = stm.getGeneratedKeys();
+			if(keys.next()){
+				soldID = keys.getInt(1);
+			}
+		} catch (SQLException e) {e.printStackTrace();}
 	}
 	
 	private void init() {
@@ -87,17 +251,20 @@ public class InsertItem extends GridLayout{
 		// Left layout
 		leftLayout = new VerticalLayout();
 		
+		// Panels
+		wp = new WatchingPanel();
+		bp = new BoughtPanel();
+		shp = new ShippedPanel();
+		op = new OnSalePanel();
+		sop = new SoldPanel();
+		
 		// Back button layout
 		HorizontalLayout backLayout = new HorizontalLayout();
 		backLayout.setMargin(false,true,false,false);
 		backButton = new Button("Back");
-		backButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				crazybizApplication.getWindow().removeAllComponents();
-				crazybizApplication.setHome(new Homepage(crazybizApplication, username));
-				crazybizApplication.getWindow().setContent(crazybizApplication.getHome());
-			}
-		});
+		
+	// Custom listener in constructors //-------------------------------
+		
 		backButton.setStyleName(BaseTheme.BUTTON_LINK);
 		backLayout.addComponent(backButton);
 
@@ -151,27 +318,10 @@ public class InsertItem extends GridLayout{
 		source.setWidth("200px");
 		
 		status = new StatusManager(this);
-		
-		iu = new ImageUpload();
 
 		saveButton = new Button("Save item");
 		saveButton.addListener(new ClickListener() {		
 			public void buttonClick(ClickEvent event) {
-				if(wp == null){
-					wp = new WatchingPanel();
-				}
-				if(bp == null){
-					bp = new BoughtPanel();
-				}
-				if(shp == null){
-					shp = new ShippedPanel();
-				}
-				if(op == null){
-					op = new OnSalePanel();
-				}
-				if(sop == null){
-					sop = new SoldPanel();
-				}
 				try {
 					executeQuery();
 				} catch (SQLException e) {e.printStackTrace();}
@@ -184,7 +334,6 @@ public class InsertItem extends GridLayout{
 		leftLayout.addComponent(model);
 		leftLayout.addComponent(source);
 		leftLayout.addComponent(status);
-		leftLayout.addComponent(iu);
 		leftLayout.addComponent(saveButton);
 		
 		this.addComponent(leftLayout,0,0);

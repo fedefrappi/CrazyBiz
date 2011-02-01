@@ -35,7 +35,6 @@ public class BoughtPanel extends VerticalLayout implements Property.ValueChangeL
         sellerCountry = new TextField("Country");
         sellerCity = new TextField("City");
         
-        
         addComponent(price);
         addComponent(date);
         addComponent(sellerName);
@@ -87,4 +86,31 @@ public class BoughtPanel extends VerticalLayout implements Property.ValueChangeL
 		return sellerCity.getValue().toString();
 	}
 	
+	public void setSellerCity(String newSellerCity) {
+		this.sellerCity.setValue(newSellerCity);
+	}
+	
+	public void setSellerCountry(String newSellerCountry) {
+		this.sellerCountry.setValue(newSellerCountry);
+	}
+	
+	public void setSellerEmail(String newSellerEmail) {
+		this.sellerEmail.setValue(newSellerEmail);
+	}
+	
+	public void setSellerPhone(String newSellerPhone) {
+		this.sellerPhone.setValue(newSellerPhone);
+	}
+	
+	public void setSellerName(String newSellerName) {
+		this.sellerName.setValue(newSellerName);
+	}
+	
+	public void setDate(Date newDate) {
+		this.date.setValue(newDate);
+	}
+	
+	public void setPrice(BigDecimal newPrice) {
+		this.price.setValue(newPrice);
+	}
 }

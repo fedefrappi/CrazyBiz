@@ -66,5 +66,21 @@ public class ProposalEntryComponent extends VerticalLayout implements Property.V
 		}
 		return (Date)date.getValue();
 	}
+	
+	public void setDate(Date newDate) {
+		this.date.setValue(newDate);
+	}
+	
+	public void setPrice(BigDecimal newPrice) {
+		this.price.setValue(newPrice);
+	}
+	
+	public void setUser(String newUser) {
+		this.user.setValue(newUser);
+	}
+	
+	public void setMessage(String newMessage) {
+		this.message.setValue(newMessage);
+	}
 
 }

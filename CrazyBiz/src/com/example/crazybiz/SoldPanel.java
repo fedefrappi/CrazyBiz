@@ -56,4 +56,15 @@ public class SoldPanel extends VerticalLayout implements Property.ValueChangeLis
 		return buyer.getValue().toString();
 	}
 	
+	public void setPrice(BigDecimal newPrice) {
+		this.price.setValue(newPrice);
+	}
+	
+	public void setBuyer(String newBuyer) {
+		this.buyer.setValue(newBuyer);
+	}
+	
+	public void setDate(Date newDate) {
+		this.date.setValue(newDate);
+	}
 }

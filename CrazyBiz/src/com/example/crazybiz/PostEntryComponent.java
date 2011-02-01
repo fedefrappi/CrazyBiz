@@ -52,4 +52,19 @@ public class PostEntryComponent extends VerticalLayout{
 		return (Date)date.getValue();
 	}
 	
+	public void setDate(Date newDate) {
+		this.date.setValue(newDate);
+	}
+	
+	public void setPrice(BigDecimal newPrice) {
+		this.price.setValue(newPrice);
+	}
+	
+	public void setSource(String newSource) {
+		this.source.setValue(newSource);
+	}
+	
+	public void setMessage(String newMessage) {
+		this.message.setValue(newMessage);
+	}
 }

@@ -1,16 +1,15 @@
 package com.example.crazybiz;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Set;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
@@ -31,13 +30,20 @@ public class SearchItem extends VerticalLayout {
 	private Window subwindow;
 	private TextField filter;
 	private Table table;
-	private Label selected;
 	private Button backButton;
 	private String queryString;
+	private VerticalLayout detailsLayout;
+	private TextArea detailsTextArea;
+	private Button editItem;
+	private int itemID;
 	
 	
 	public SearchItem(final CrazybizApplication crazybizApplication, final String username) {
 		this.crazybizApplication = crazybizApplication;
+		setMargin(true);
+		setSpacing(true);
+		
+		itemID = -1;
 		
 		// Search options
 		searchOptionsLayout = new HorizontalLayout();
@@ -115,13 +121,15 @@ public class SearchItem extends VerticalLayout {
 					// INIT MODAL WINDOW
 					subwindow = new Window("A modal subwindow");
 					subwindow.setWidth("500px");
-					subwindow.setHeight("300px");
+					subwindow.setHeight("260px");
 				    subwindow.setModal(true);
 			        // Configure the modal window layout and components
 			        VerticalLayout layout = (VerticalLayout) subwindow.getContent();
 			        layout.setMargin(true);
 			        layout.setSpacing(true);
 			        final TextField customQuery = new TextField("This is a modal subwindow.");
+			        customQuery.setSizeFull();
+			        customQuery.setHeight("180px");
 			        subwindow.addComponent(customQuery);
 			        Button cancel = new Button("Cancel", new Button.ClickListener() {
 			            public void buttonClick(ClickEvent event) {
@@ -152,7 +160,14 @@ public class SearchItem extends VerticalLayout {
 		searchOptionsLayout.addComponent(searchCustomQuery);
 		searchOptionsLayout.addComponent(filter);
 		
-		selected = new Label("");
+		detailsLayout = new VerticalLayout();
+		detailsLayout.setSizeFull();
+		detailsTextArea = new TextArea();
+		detailsTextArea.setWidth("500px");
+		detailsTextArea.setHeight("150px");
+		detailsLayout.addComponent(detailsTextArea);
+		detailsLayout.setComponentAlignment(detailsTextArea, Alignment.MIDDLE_CENTER);
+		
 		table = new Table("Results");
 		table.setWidth("500px");
 		table.setSelectable(true);
@@ -181,11 +196,35 @@ public class SearchItem extends VerticalLayout {
                // in multiselect mode, a Set of itemIds is returned,
                 // in singleselect mode the itemId is returned directly
                 MyResult result = (MyResult)event.getProperty().getValue();
-                if (result == null) {
-                    selected.setValue("No selection");
-                } else {
-                    selected.setValue("Selected: " + result.getItemID());
-                    // Scatena qualcosa //
+                if (result != null) {
+                    // Get details to show
+                	itemID = result.getItemID();
+                    String text = "";
+                    try {
+                    	PreparedStatement stm = DBactions.conn.prepareStatement(
+                    			"SELECT brand.brand_name,model.model_name,item.status,buy.price,buy.date,buy.name,sell.price,sell.date,sell.buyer,proposal.price " +
+                    			"FROM brand,model,item,buy,sell,proposal " +
+                    			"WHERE item.item_id=? AND brand.brand_id=model.brand_id AND item.model_id=model.model_id AND buy.item_id=? AND sell.item_id=? AND proposal.item_id=? " +
+                    			"ORDER BY proposal.price DESC;");
+                    	stm.setInt(1, itemID);
+                    	stm.setInt(2, itemID);
+                    	stm.setInt(3, itemID);
+                    	stm.setInt(4, itemID);
+						ResultSet rs = stm.executeQuery();
+						if(rs.next()){
+							text = "Brand:\t\t\t\t\t" + rs.getString(1) + "\n" +
+								   "Model:\t\t\t\t\t" + rs.getString(2) + "\n" +
+								   "Status:\t\t\t\t\t" + rs.getString(3) + "\n" +
+								   "Bougth:\t\t\t\t\t" + rs.getInt(4) + " €" + " on " + rs.getDate(5) + " by " + rs.getString(6) + "\n" +
+								   "Sold:\t\t\t\t\t" + rs.getInt(7) + " €" + " on " + rs.getDate(8) + " by " + rs.getString(9) + "\n" +
+								   "Best proposal:\t\t\t\t" + rs.getInt(10) + " €\n\n" +
+								   "Item ID:\t\t\t\t\t" + itemID;
+						}
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+                    // Show details
+					detailsTextArea.setValue(text);
                 }
 			}
 		});
@@ -205,14 +244,22 @@ public class SearchItem extends VerticalLayout {
 		backButton.setStyleName(BaseTheme.BUTTON_LINK);
 		backLayout.addComponent(backButton);
 		
+		editItem = new Button("Edit item");
+		editItem.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				crazybizApplication.setInsert(new InsertItem(crazybizApplication, username, itemID));
+				crazybizApplication.getWindow().setContent(crazybizApplication.getInsert());
+			}
+		});
+		
 		addComponent(backLayout);
 		addComponent(searchOptionsLayout);
 		addComponent(table);
-		addComponent(selected);
+		detailsLayout.addComponent(editItem);
+		addComponent(detailsLayout);
 		
 		this.setComponentAlignment(backLayout, Alignment.TOP_LEFT);
 		this.setComponentAlignment(searchOptionsLayout, Alignment.TOP_CENTER);
 		this.setComponentAlignment(table, Alignment.MIDDLE_CENTER);
-		this.setComponentAlignment(selected, Alignment.MIDDLE_CENTER);
 	}
 }

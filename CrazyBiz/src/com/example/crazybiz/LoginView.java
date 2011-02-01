@@ -32,7 +32,6 @@ public class LoginView extends VerticalLayout {
 					DBactions.connect();
 					//if(UserDAO.isValidLogin(event.getLoginParameter("username"), event.getLoginParameter("password"))){
 						String username = event.getLoginParameter("username");
-						getWindow().showNotification("LOGGED IN","\nWelcome "+username);
 						//getWindow().setContent(new Homepage(event.getLoginParameter("username")));
 						crazybizApplication.getWindow().removeAllComponents();
 						crazybizApplication.setHome(new Homepage(crazybizApplication,username));

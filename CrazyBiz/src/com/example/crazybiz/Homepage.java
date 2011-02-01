@@ -1,5 +1,10 @@
 package com.example.crazybiz;
 
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import com.vaadin.terminal.ClassResource;
 import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
@@ -11,6 +16,8 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.BaseTheme;
+
+import dao.DBactions;
 
 public class Homepage extends VerticalLayout {
 	private CrazybizApplication crazybizApplication;
@@ -51,7 +58,7 @@ public class Homepage extends VerticalLayout {
 
 		// Cash Label
 		HorizontalLayout cashLayout = new HorizontalLayout();
-		cash = new Label("Current cash: -1000€");
+		cash = new Label("Current cash: " + getCurrentCash() + " €");
 		cashLayout.addComponent(cash);
 		// Buttons
 		insertButton = new Button("Insert Item");
@@ -92,5 +99,27 @@ public class Homepage extends VerticalLayout {
 		image.setHeight("400px");
 		addComponent(image);
 		setComponentAlignment(image, Alignment.MIDDLE_CENTER);
+	}
+
+	private String getCurrentCash() {
+		BigDecimal currentCash = new BigDecimal(0);
+		PreparedStatement stm;
+		try {
+			stm = DBactions.conn.prepareStatement(
+					"SELECT sum(buy.price) " +
+					"FROM buy;");
+			ResultSet rs = stm.executeQuery();
+			if(rs.next()){
+				currentCash = currentCash.add(rs.getBigDecimal(1));
+			}
+			stm = DBactions.conn.prepareStatement(
+					"SELECT sum(sell.price) " +
+					"FROM sell;");
+			rs = stm.executeQuery();
+			if(rs.next()){
+				currentCash = currentCash.subtract(rs.getBigDecimal(1));
+			}
+		} catch (SQLException e) {e.printStackTrace();}
+		return currentCash.toString();
 	}
 }

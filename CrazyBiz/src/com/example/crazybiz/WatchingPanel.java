@@ -36,4 +36,18 @@ public class WatchingPanel extends VerticalLayout{
 	public boolean getFdpin(){
 		return priceOptionsSelection.isSelected("IN");
 	}
+
+	public void setPrice(BigDecimal newPrice) {
+		this.price.setValue(newPrice);
+	}
+
+	public void setPriceOptionsSelection(Boolean fdpinValue) {
+		if(fdpinValue==true){
+			this.priceOptionsSelection.select("IN");
+		}else{
+			this.priceOptionsSelection.select("OUT");
+		}
+	}
+	
+	
 }
