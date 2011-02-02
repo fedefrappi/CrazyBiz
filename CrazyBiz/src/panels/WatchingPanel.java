@@ -1,9 +1,10 @@
-package com.example.crazybiz;
+package panels;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import com.example.crazybiz.Utils;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;

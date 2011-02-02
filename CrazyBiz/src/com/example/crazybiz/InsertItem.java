@@ -10,6 +10,12 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import panels.BoughtPanel;
+import panels.OnSalePanel;
+import panels.ShippedPanel;
+import panels.SoldPanel;
+import panels.WatchingPanel;
+
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
@@ -26,7 +32,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-import dao.DBactions;
+import db.DBactions;
 import domain.Brand;
 import domain.Model;
 

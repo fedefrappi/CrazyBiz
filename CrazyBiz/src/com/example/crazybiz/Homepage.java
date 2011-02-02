@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import com.vaadin.terminal.ClassResource;
 import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -17,7 +15,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.BaseTheme;
 
-import dao.DBactions;
+import db.DBactions;
 
 public class Homepage extends VerticalLayout {
 	private CrazybizApplication crazybizApplication;
@@ -44,8 +42,6 @@ public class Homepage extends VerticalLayout {
 		userLogout.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				//getWindow().removeComponent(getParent());
-				//getWindow().setContent(new LoginView());
 				crazybizApplication.getWindow().removeAllComponents();
 				crazybizApplication.setLogin(new LoginView(crazybizApplication));
 				crazybizApplication.getWindow().addComponent(crazybizApplication.getLogin());
@@ -109,7 +105,7 @@ public class Homepage extends VerticalLayout {
 					"SELECT sum(buy.price) " +
 					"FROM buy;");
 			ResultSet rs = stm.executeQuery();
-			if(rs.next()){
+			if(rs != null){
 				currentCash = currentCash.add(rs.getBigDecimal(1));
 			}
 			stm = DBactions.conn.prepareStatement(

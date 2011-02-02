@@ -1,9 +1,10 @@
-package com.example.crazybiz;
+package panels;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Date;
 
+import com.example.crazybiz.Utils;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.PopupDateField;

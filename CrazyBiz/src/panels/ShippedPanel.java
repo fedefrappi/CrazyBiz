@@ -1,4 +1,4 @@
-package com.example.crazybiz;
+package panels;
 
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;

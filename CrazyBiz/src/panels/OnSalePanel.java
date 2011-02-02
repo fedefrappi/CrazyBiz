@@ -1,5 +1,7 @@
-package com.example.crazybiz;
+package panels;
 
+import com.example.crazybiz.PostComponent;
+import com.example.crazybiz.ProposalComponent;
 import com.vaadin.ui.GridLayout;
 
 public class OnSalePanel extends GridLayout{

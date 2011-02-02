@@ -17,7 +17,9 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.BaseTheme;
 
-import dao.DBactions;
+import db.DBactions;
+import db.MyResult;
+import db.ResultContainer;
 
 public class SearchItem extends VerticalLayout {
 	private CrazybizApplication crazybizApplication;

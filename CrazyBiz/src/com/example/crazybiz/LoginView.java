@@ -11,7 +11,7 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.LoginForm.LoginEvent;
 
-import dao.DBactions;
+import db.DBactions;
 
 public class LoginView extends VerticalLayout {
 	private Panel loginPanel;

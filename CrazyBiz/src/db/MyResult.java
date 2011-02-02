@@ -1,4 +1,4 @@
-package com.example.crazybiz;
+package db;
 
 public class MyResult {
 

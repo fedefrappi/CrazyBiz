@@ -1,4 +1,4 @@
-package com.example.crazybiz;
+package db;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -6,7 +6,6 @@ import java.sql.SQLException;
 
 import com.vaadin.data.util.BeanItemContainer;
 
-import dao.DBactions;
 
 public class ResultContainer extends BeanItemContainer<MyResult> implements Serializable{
     
