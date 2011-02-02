@@ -78,7 +78,8 @@ public class SearchItem extends VerticalLayout {
 			public void buttonClick(ClickEvent event) {
 		        queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
         		"FROM brand,model,item " +
-        		"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id";
+        		"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
+        		"ORDER BY item.lastModified DESC";
 		        table.removeAllItems();
 				table.setContainerDataSource(ResultContainer.create(queryString));
 			}
@@ -89,7 +90,8 @@ public class SearchItem extends VerticalLayout {
 				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
 				"FROM brand,model,item " +
 				"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
-				"AND brand.brand_name = '"+filter.getValue().toString()+"'";
+				"AND brand.brand_name = '"+filter.getValue().toString()+"' " +
+				"ORDER BY item.lastModified DESC";
 		        table.removeAllItems();
 				table.setContainerDataSource(ResultContainer.create(queryString));
 			}
@@ -100,7 +102,8 @@ public class SearchItem extends VerticalLayout {
 				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
 				"FROM brand,model,item " +
 				"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
-				"AND model.model_name = '"+filter.getValue().toString()+"'";
+				"AND model.model_name = '"+filter.getValue().toString()+"' " +
+				"ORDER BY item.lastModified DESC";
 		        table.removeAllItems();
 				table.setContainerDataSource(ResultContainer.create(queryString));
 			}
@@ -111,7 +114,8 @@ public class SearchItem extends VerticalLayout {
 				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
 				"FROM brand,model,item " +
 				"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
-				"AND item.status = '"+filter.getValue().toString()+"'";
+				"AND item.status = '"+filter.getValue().toString()+"' " + 
+				"ORDER BY item.lastModified DESC";
 		        table.removeAllItems();
 				table.setContainerDataSource(ResultContainer.create(queryString));
 			}
@@ -186,7 +190,8 @@ public class SearchItem extends VerticalLayout {
         // Populate from db with Default query
         queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
         		"FROM brand,model,item " +
-        		"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id";
+        		"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
+        		"ORDER BY item.lastModified DESC";
         table.setContainerDataSource(ResultContainer.create(queryString));
         table.setVisibleColumns(new String[]{"brand","model","status"});
 

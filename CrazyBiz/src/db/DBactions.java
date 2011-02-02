@@ -22,7 +22,7 @@ public class DBactions {
 	
 	public static boolean isValidLogin(String user, String pw) throws SQLException, ClassNotFoundException{
 		
-		PreparedStatement stm = conn.prepareStatement("SELECT * FROM user WHERE username=? AND password=?");
+		PreparedStatement stm = conn.prepareStatement("SELECT * FROM user WHERE username=? AND password=md5(?)");
 		stm.setString(1, user);
 		stm.setString(2, pw);
 		ResultSet res = stm.executeQuery();

@@ -92,7 +92,7 @@ public class Homepage extends VerticalLayout {
 		// Background
 		Embedded image = new Embedded("",new ThemeResource("images/pedobear.png"));
 		image.setType(Embedded.TYPE_IMAGE);
-		image.setHeight("400px");
+		image.setHeight("500px");
 		addComponent(image);
 		setComponentAlignment(image, Alignment.MIDDLE_CENTER);
 	}
@@ -102,18 +102,22 @@ public class Homepage extends VerticalLayout {
 		PreparedStatement stm;
 		try {
 			stm = DBactions.conn.prepareStatement(
-					"SELECT sum(buy.price) " +
-					"FROM buy;");
-			ResultSet rs = stm.executeQuery();
-			if(rs != null){
-				currentCash = currentCash.add(rs.getBigDecimal(1));
-			}
-			stm = DBactions.conn.prepareStatement(
 					"SELECT sum(sell.price) " +
 					"FROM sell;");
+			ResultSet rs = stm.executeQuery();
+			if(rs.next()){
+				if(rs.getBigDecimal(1) != null){
+					currentCash = currentCash.add(rs.getBigDecimal(1));
+				}
+			}
+			stm = DBactions.conn.prepareStatement(
+					"SELECT sum(buy.price) " +
+			"FROM buy;");
 			rs = stm.executeQuery();
 			if(rs.next()){
-				currentCash = currentCash.subtract(rs.getBigDecimal(1));
+				if(rs.getBigDecimal(1) != null){
+					currentCash = currentCash.subtract(rs.getBigDecimal(1));
+				}
 			}
 		} catch (SQLException e) {e.printStackTrace();}
 		return currentCash.toString();

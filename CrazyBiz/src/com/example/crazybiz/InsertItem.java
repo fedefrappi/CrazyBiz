@@ -116,6 +116,7 @@ public class InsertItem extends GridLayout{
 		backButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				crazybizApplication.getWindow().removeAllComponents();
+				crazybizApplication.setSearch(new SearchItem(crazybizApplication, username));
 				crazybizApplication.getWindow().setContent(crazybizApplication.getSearch());
 			}
 		});
@@ -138,25 +139,22 @@ public class InsertItem extends GridLayout{
 			}
 			// Watching panel
 			stm = DBactions.conn.prepareStatement(
-					"SELECT watched.price,watched.fdpin " +
+					"SELECT price,fdpin,id " +
 					"FROM watched " +
-					"WHERE watched.item_id=?;",Statement.RETURN_GENERATED_KEYS);
+					"WHERE item_id=?;");
 			stm.setInt(1, itemID);
 			rs = stm.executeQuery();
 			if(rs.next()){
 				wp.setPrice(rs.getBigDecimal(1));
 				wp.setPriceOptionsSelection(rs.getBoolean(2));
 				status.getWatchingCheckbox().setEnabled(true);
-			}
-			ResultSet keys = stm.getGeneratedKeys();
-			if(keys.next()){
-				watchingID = keys.getInt(1);
+				this.watchingID = rs.getInt(3);
 			}
 			// Buy panel
 			stm = DBactions.conn.prepareStatement(
-					"SELECT price,name,phone,email,country,city,date " +
+					"SELECT price,name,phone,email,country,city,date,id " +
 					"FROM buy " +
-					"WHERE item_id=?;",Statement.RETURN_GENERATED_KEYS);
+					"WHERE item_id=?;");
 			stm.setInt(1, itemID);
 			rs = stm.executeQuery();
 			if(rs.next()){
@@ -167,17 +165,15 @@ public class InsertItem extends GridLayout{
 				bp.setSellerCountry(rs.getString(5));
 				bp.setSellerCity(rs.getString(6));
 				bp.setDate(rs.getDate(7));
-				status.getBoughtCheckbox().setEnabled(true);
+				status.getBoughtCheckbox().setValue(true);
+				this.buyID = rs.getInt(8);
 			}
-			keys = stm.getGeneratedKeys();
-			if(keys.next()){
-				buyID = keys.getInt(1);
-			}
+
 			// Shipping panel
 			stm = DBactions.conn.prepareStatement(
-					"SELECT tracking,recipient,company " +
+					"SELECT tracking,recipient,company,id " +
 					"FROM shipping " +
-					"WHERE item_id=?;",Statement.RETURN_GENERATED_KEYS);
+					"WHERE item_id=?;");
 			stm.setInt(1, itemID);
 			rs = stm.executeQuery();
 			if(rs.next()){
@@ -185,15 +181,12 @@ public class InsertItem extends GridLayout{
 				shp.setRecipient(rs.getString(2));
 				shp.setCompany(rs.getString(3));
 				status.getShippedCheckbox().setEnabled(true);
-			}
-			keys = stm.getGeneratedKeys();
-			if(keys.next()){
-				shippingID = keys.getInt(1);
+				this.shippingID = rs.getInt(4);
 			}
 			// Posts
 			int existingPosts = 0;
 			stm = DBactions.conn.prepareStatement(
-					"SELECT price,source,message,date " +
+					"SELECT price,source,message,date,id " +
 					"FROM post " +
 					"WHERE item_id=?;");
 			stm.setInt(1, itemID);
@@ -232,9 +225,9 @@ public class InsertItem extends GridLayout{
 			}
 			// Sold panel
 			stm = DBactions.conn.prepareStatement(
-					"SELECT price,date,buyer " +
+					"SELECT price,date,buyer,id " +
 					"FROM sell " +
-					"WHERE item_id=?;",Statement.RETURN_GENERATED_KEYS);
+					"WHERE item_id=?;");
 			stm.setInt(1, itemID);
 			rs = stm.executeQuery();
 			if(rs.next()){
@@ -242,10 +235,7 @@ public class InsertItem extends GridLayout{
 				sop.setDate(rs.getDate(2));
 				sop.setBuyer(rs.getString(3));
 				status.getSoldCheckbox().setEnabled(true);
-			}
-			keys = stm.getGeneratedKeys();
-			if(keys.next()){
-				soldID = keys.getInt(1);
+				this.soldID = rs.getInt(4);
 			}
 		} catch (SQLException e) {e.printStackTrace();}
 	}
@@ -457,7 +447,7 @@ public class InsertItem extends GridLayout{
 			// Insert item
 			try{
 				stm = 
-					DBactions.conn.prepareStatement("INSERT INTO item(source,model_id,status) VALUES(?,?,?)",Statement.RETURN_GENERATED_KEYS);
+					DBactions.conn.prepareStatement("INSERT INTO item(source,model_id,status,lastModified) VALUES(?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
 				stm.clearParameters();
 				if(source.getValue() == null){
 					stm.setNull(1, Types.VARCHAR);
@@ -466,6 +456,7 @@ public class InsertItem extends GridLayout{
 				}
 				stm.setInt(2, modelID);
 				stm.setString(3, "disabled");
+				stm.setDate(4, new Date(System.currentTimeMillis()));
 				stm.executeUpdate();
 				ResultSet keys = stm.getGeneratedKeys();
 				if(keys.next()){
@@ -475,14 +466,15 @@ public class InsertItem extends GridLayout{
 		}else{
 			// Update item
 			try {
-				stm = DBactions.conn.prepareStatement("UPDATE item SET source=? WHERE item_id=?;");
+				stm = DBactions.conn.prepareStatement("UPDATE item SET source=?,lastModified=? WHERE item_id=?;");
 				stm.clearParameters();
 				if(source.getValue() == null){
 					stm.setNull(1, Types.VARCHAR);
 				}else{
 					stm.setString(1, source.getValue().toString());
 				}
-				stm.setInt(2, itemID);
+				stm.setDate(2, new Date(System.currentTimeMillis()));
+				stm.setInt(3, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
@@ -508,10 +500,11 @@ public class InsertItem extends GridLayout{
 				}
 				// Update item status
 				stm = 
-					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
+					DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
 				stm.clearParameters();
 				stm.setString(1, "watching");
-				stm.setInt(2, itemID);
+				stm.setDate(2, new Date(System.currentTimeMillis()));
+				stm.setInt(3, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}else if(status.getWatchingCheckbox().booleanValue()){
@@ -527,10 +520,18 @@ public class InsertItem extends GridLayout{
 				stm.setBoolean(2, wp.getFdpin());
 				stm.setInt(3, watchingID);
 				stm.executeUpdate();
+
+				stm = 
+					DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
+				stm.clearParameters();
+				stm.setString(1, "watching");
+				stm.setDate(2, new Date(System.currentTimeMillis()));
+				stm.setInt(3, itemID);
+				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
 		
-		// BUY - OK
+		// BUY
 		if(status.getBoughtCheckbox().booleanValue() && buyID == -1){
 			// Insert buy
 			try{
@@ -576,10 +577,11 @@ public class InsertItem extends GridLayout{
 				}
 				// Update item status
 				stm = 
-					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
+					DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
 				stm.clearParameters();
 				stm.setString(1, "bought");
-				stm.setInt(2, itemID);
+				stm.setDate(2, new Date(System.currentTimeMillis()));
+				stm.setInt(3, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}else if(status.getBoughtCheckbox().booleanValue()){
@@ -619,10 +621,19 @@ public class InsertItem extends GridLayout{
 				stm.setDate(7, new Date(bp.getDate().getTime()));
 				stm.setInt(8, buyID);
 				stm.executeUpdate();
+				
+				stm = 
+					DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
+				stm.clearParameters();
+				stm.setString(1, "bought");
+				stm.setDate(2, new Date(System.currentTimeMillis()));
+				stm.setInt(3, itemID);
+				stm.executeUpdate();
+				
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
 		
-		// SHIPPING - OK
+		// SHIPPING
 		if(status.getShippedCheckbox().booleanValue() && shippingID == -1){
 			// Insert shipping
 			try{
@@ -652,10 +663,11 @@ public class InsertItem extends GridLayout{
 				}
 				// Update item status
 				stm = 
-					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
+					DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
 				stm.clearParameters();
 				stm.setString(1, "shipped");
-				stm.setInt(2, itemID);
+				stm.setDate(2, new Date(System.currentTimeMillis()));
+				stm.setInt(3, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}else if(status.getShippedCheckbox().booleanValue()){
@@ -679,10 +691,18 @@ public class InsertItem extends GridLayout{
 				}
 				stm.setInt(4, shippingID);
 				stm.executeUpdate();
+				
+				stm = 
+					DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
+				stm.clearParameters();
+				stm.setString(1, "shipped");
+				stm.setDate(2, new Date(System.currentTimeMillis()));
+				stm.setInt(3, itemID);
+				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
 		
-		// ON SALE - OK
+		// ON SALE
 		if(status.getOnsaleCheckbox().booleanValue()){
 			// Insert on sale
 			for(int k=0; k<op.getProposalComponent().getEntries().size(); k++){
@@ -716,6 +736,15 @@ public class InsertItem extends GridLayout{
 						if(keys.next()){
 							proposalIDs.set(k, keys.getInt(1));
 						}
+						
+						// Update item status
+						stm = 
+							DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
+						stm.clearParameters();
+						stm.setString(1, "onSale");
+						stm.setDate(2, new Date(System.currentTimeMillis()));
+						stm.setInt(3, itemID);
+						stm.executeUpdate();
 					} catch (MySQLIntegrityConstraintViolationException e) {}
 				}else{
 					// Update proposal
@@ -739,6 +768,15 @@ public class InsertItem extends GridLayout{
 						}
 						stm.setDate(4,new Date(op.getProposalComponent().getEntries().get(k).getDate().getTime()));
 						stm.setInt(5, proposalIDs.get(k));
+						stm.executeUpdate();
+						
+						// Update item status
+						stm = 
+							DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
+						stm.clearParameters();
+						stm.setString(1, "onSale");
+						stm.setDate(2, new Date(System.currentTimeMillis()));
+						stm.setInt(3, itemID);
 						stm.executeUpdate();
 					} catch (MySQLIntegrityConstraintViolationException e) {}
 				}
@@ -774,6 +812,15 @@ public class InsertItem extends GridLayout{
 						if(keys.next()){
 							postIDs.set(k, keys.getInt(1));
 						}
+						
+						// Update item status
+						stm = 
+							DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
+						stm.clearParameters();
+						stm.setString(1, "onSale");
+						stm.setDate(2, new Date(System.currentTimeMillis()));
+						stm.setInt(3, itemID);
+						stm.executeUpdate();
 					} catch (MySQLIntegrityConstraintViolationException e) {}
 				}
 				else{
@@ -799,19 +846,21 @@ public class InsertItem extends GridLayout{
 						stm.setDate(4,new Date(op.getPostComponent().getEntries().get(k).getDate().getTime()));
 						stm.setInt(5, postIDs.get(k));
 						stm.executeUpdate();
+						
+						// Update item status
+						stm = 
+							DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
+						stm.clearParameters();
+						stm.setString(1, "onSale");
+						stm.setDate(2, new Date(System.currentTimeMillis()));
+						stm.setInt(3, itemID);
+						stm.executeUpdate();
 					} catch (MySQLIntegrityConstraintViolationException e) {}
 				}
 			}
-			// Update item status
-			stm = 
-				DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
-			stm.clearParameters();
-			stm.setString(1, "onSale");
-			stm.setInt(2, itemID);
-			stm.executeUpdate();
 		}
 		
-		// SELL - OK
+		// SELL
 		if(status.getSoldCheckbox().booleanValue() && soldID == -1){
 			// Insert sell
 			try{
@@ -837,10 +886,11 @@ public class InsertItem extends GridLayout{
 				}
 				// Update item status
 				stm = 
-					DBactions.conn.prepareStatement("UPDATE item SET status=? WHERE item_id=?");
+					DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
 				stm.clearParameters();
 				stm.setString(1, "sold");
-				stm.setInt(2, itemID);
+				stm.setDate(2, new Date(System.currentTimeMillis()));
+				stm.setInt(3, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}else if(status.getSoldCheckbox().booleanValue()){
@@ -859,6 +909,14 @@ public class InsertItem extends GridLayout{
 					stm.setString(3, sop.getBuyer());
 				}
 				stm.setInt(4, soldID);
+				stm.executeUpdate();
+				
+				stm = 
+					DBactions.conn.prepareStatement("UPDATE item SET status=?,lastModified=? WHERE item_id=?");
+				stm.clearParameters();
+				stm.setString(1, "sold");
+				stm.setDate(2, new Date(System.currentTimeMillis()));
+				stm.setInt(3, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
