@@ -4,6 +4,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.tomcat.dbcp.dbcp.DbcpException;
+
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -208,6 +210,7 @@ public class SearchItem extends VerticalLayout {
                 	itemID = result.getItemID();
                     String text = "";
                     try {
+                    	/*
                     	PreparedStatement stm = DBactions.conn.prepareStatement(
                     			"SELECT brand.brand_name,model.model_name,item.status,buy.price,buy.date,buy.name,sell.price,sell.date,sell.buyer,proposal.price " +
                     			"FROM brand,model,item,buy,sell,proposal " +
@@ -227,6 +230,51 @@ public class SearchItem extends VerticalLayout {
 								   "Best proposal:\t\t\t\t" + rs.getInt(10) + " €\n\n" +
 								   "Item ID:\t\t\t\t\t" + itemID;
 						}
+						*/
+                    	PreparedStatement stm = DBactions.conn.prepareStatement(
+                    			"SELECT brand.brand_name,model.model_name,item.status " +
+                    			"FROM brand,model,item " +
+                    			"WHERE item.item_id=? AND model.model_id=item.model_id AND brand.brand_id=model.brand_id;");
+                    	stm.setInt(1, itemID);
+                    	ResultSet rs = stm.executeQuery();
+                    	if(rs.next()){
+                    		text = text + 
+                    			"Brand:\t\t\t\t\t" + rs.getString(1) + "\n" +
+                    			"Model:\t\t\t\t\t" + rs.getString(2) + "\n" +
+                    			"Status:\t\t\t\t\t" + rs.getString(3) + "\n";
+                    	}
+                    	stm = DBactions.conn.prepareStatement(
+                    			"SELECT buy.price,buy.date,buy.name " +
+                    			"FROM buy " +
+                    			"WHERE buy.item_id=?;");
+                    	stm.setInt(1, itemID);
+                    	rs = stm.executeQuery();
+                    	if(rs.next()){
+                    		text = text + 
+                    			"Bougth:\t\t\t\t\t" + rs.getBigDecimal(1) + " €" + " on " + rs.getDate(2) + " by " + rs.getString(3) + "\n";
+                    	}
+                    	stm = DBactions.conn.prepareStatement(
+                    			"SELECT sell.price,sell.date,sell.buyer " +
+                    			"FROM sell " +
+                    			"WHERE sell.item_id=?;");
+                    	stm.setInt(1, itemID);
+                    	rs = stm.executeQuery();
+                    	if(rs.next()){
+                    		text = text + 
+                    			"Sold:\t\t\t\t\t" + rs.getBigDecimal(1) + " €" + " on " + rs.getDate(2) + " by " + rs.getString(3) + "\n";
+                    	}
+                    	stm = DBactions.conn.prepareStatement(
+                    			"SELECT proposal.price " +
+                    			"FROM proposal " +
+                    			"WHERE proposal.item_id=? " +
+                    			"ORDER BY proposal.price DESC;");
+                    	stm.setInt(1, itemID);
+                    	rs = stm.executeQuery();
+                    	if(rs.next()){
+                    		text = text + 
+                    			"Best proposal:\t\t\t\t" + rs.getInt(10) + " €\n\n";
+                    	}
+                    	text = text + "Item ID:\t\t\t\t\t" + itemID;
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}

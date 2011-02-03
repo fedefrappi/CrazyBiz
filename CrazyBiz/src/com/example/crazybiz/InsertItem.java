@@ -147,7 +147,8 @@ public class InsertItem extends GridLayout{
 			if(rs.next()){
 				wp.setPrice(rs.getBigDecimal(1));
 				wp.setPriceOptionsSelection(rs.getBoolean(2));
-				status.getWatchingCheckbox().setEnabled(true);
+				status.getWatchingCheckbox().setValue(true);
+				status.getWatchingButton().setEnabled(true);
 				this.watchingID = rs.getInt(3);
 			}
 			// Buy panel
@@ -166,6 +167,7 @@ public class InsertItem extends GridLayout{
 				bp.setSellerCity(rs.getString(6));
 				bp.setDate(rs.getDate(7));
 				status.getBoughtCheckbox().setValue(true);
+				status.getBoughtButton().setEnabled(true);
 				this.buyID = rs.getInt(8);
 			}
 
@@ -180,7 +182,8 @@ public class InsertItem extends GridLayout{
 				shp.setTracking(rs.getString(1));
 				shp.setRecipient(rs.getString(2));
 				shp.setCompany(rs.getString(3));
-				status.getShippedCheckbox().setEnabled(true);
+				status.getShippedCheckbox().setValue(true);
+				status.getShippedButton().setEnabled(true);
 				this.shippingID = rs.getInt(4);
 			}
 			// Posts
@@ -221,7 +224,8 @@ public class InsertItem extends GridLayout{
 			}
 
 			if(existingPosts>0 || existingProposals>0){
-				status.getOnsaleCheckbox().setEnabled(true);
+				status.getOnsaleCheckbox().setValue(true);
+				status.getOnsaleButton().setEnabled(true);
 			}
 			// Sold panel
 			stm = DBactions.conn.prepareStatement(
@@ -234,7 +238,8 @@ public class InsertItem extends GridLayout{
 				sop.setPrice(rs.getBigDecimal(1));
 				sop.setDate(rs.getDate(2));
 				sop.setBuyer(rs.getString(3));
-				status.getSoldCheckbox().setEnabled(true);
+				status.getSoldCheckbox().setValue(true);
+				status.getSoldButton().setEnabled(true);
 				this.soldID = rs.getInt(4);
 			}
 		} catch (SQLException e) {e.printStackTrace();}
