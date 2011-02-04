@@ -78,7 +78,7 @@ public class SearchItem extends VerticalLayout {
 		searchAll.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-		        queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
+		        queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status,item.source " +
         		"FROM brand,model,item " +
         		"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
         		"ORDER BY item.lastModified DESC";
@@ -89,7 +89,7 @@ public class SearchItem extends VerticalLayout {
 		searchBrand.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
+				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status,item.source " +
 				"FROM brand,model,item " +
 				"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
 				"AND brand.brand_name = '"+filter.getValue().toString()+"' " +
@@ -101,7 +101,7 @@ public class SearchItem extends VerticalLayout {
 		searchModel.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
+				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status,item.source " +
 				"FROM brand,model,item " +
 				"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
 				"AND model.model_name = '"+filter.getValue().toString()+"' " +
@@ -113,7 +113,7 @@ public class SearchItem extends VerticalLayout {
 		searchStatus.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
+				queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status,item.source " +
 				"FROM brand,model,item " +
 				"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
 				"AND item.status = '"+filter.getValue().toString()+"' " + 
@@ -190,12 +190,12 @@ public class SearchItem extends VerticalLayout {
         table.addContainerProperty("Status", String.class, null);
                 
         // Populate from db with Default query
-        queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status " +
+        queryString = "SELECT item.item_id,brand.brand_name,model.model_name,item.status,item.source " +
         		"FROM brand,model,item " +
         		"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
         		"ORDER BY item.lastModified DESC";
         table.setContainerDataSource(ResultContainer.create(queryString));
-        table.setVisibleColumns(new String[]{"brand","model","status"});
+        //table.setVisibleColumns(new String[]{"brand","model","status"});
 
         
         // Action handler

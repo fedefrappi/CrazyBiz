@@ -4,11 +4,16 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.vaadin.notifique.Notifique;
+import org.vaadin.notifique.Notifique.Message;
+
 import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Embedded;
+import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
@@ -25,6 +30,9 @@ public class Homepage extends VerticalLayout {
 	private Label cash;
 	private Button insertButton;
 	private Button searchButton;
+	
+	private HorizontalLayout down;
+	private Notifique notifications;
 	
 	public Homepage(CrazybizApplication crazybizApplication,String username) {
 		this.crazybizApplication = crazybizApplication;
@@ -81,20 +89,54 @@ public class Homepage extends VerticalLayout {
         horizontalLayout.setWidth(SIZE_UNDEFINED,0);
         horizontalLayout.addComponent(insertButton);
         horizontalLayout.addComponent(searchButton);
-        
-        addComponent(userLoggedLayout);
-        addComponent(cashLayout);
-        addComponent(horizontalLayout);
-        setComponentAlignment(userLoggedLayout, Alignment.TOP_RIGHT);
-		setComponentAlignment(horizontalLayout, Alignment.MIDDLE_CENTER);
-		setComponentAlignment(cashLayout, Alignment.MIDDLE_CENTER);
 		
-		// Background
+		// IMAGE
 		Embedded image = new Embedded("",new ThemeResource("images/pedobear.png"));
 		image.setType(Embedded.TYPE_IMAGE);
 		image.setHeight("500px");
-		addComponent(image);
-		setComponentAlignment(image, Alignment.MIDDLE_CENTER);
+		
+		
+		// NOTIFICATIONS AREA
+		notifications = new Notifique(false);
+		notifications.setWidth("400px");
+		// Populate notifications
+		try {
+			ResultSet rs = DBactions.getSearchResults(
+					"SELECT brand.brand_name,model.model_name,item.source,item.status " +
+	        		"FROM brand,model,item " +
+	        		"WHERE item.model_id = model.model_id AND model.brand_id = brand.brand_id " +
+	        		"ORDER BY item.lastModified DESC");
+			for(int i=0; i<5; i++){
+				if(rs.next()){
+					String str = rs.getString(1) + "  " + rs.getString(2) + " (" + rs.getString(3) + ")  -->  " + rs.getString(4);
+					notifications.add(null, str, true, Notifique.Styles.MAGIC_WHITE, true);
+				}
+			}
+		} catch (SQLException e) {e.printStackTrace();}
+		
+		notifications.setClickListener(new Notifique.ClickListener() {
+			public void messageClicked(Message message) {
+				
+			}
+		});
+		
+		down = new HorizontalLayout();
+		down.setSizeFull();
+		down.addComponent(image);
+		down.addComponent(notifications);
+		down.setComponentAlignment(image, Alignment.MIDDLE_CENTER);
+		down.setComponentAlignment(notifications, Alignment.MIDDLE_CENTER);
+		
+        addComponent(userLoggedLayout);
+        addComponent(cashLayout);
+        addComponent(horizontalLayout);
+        addComponent(down);
+        
+        setComponentAlignment(userLoggedLayout, Alignment.TOP_RIGHT);
+		setComponentAlignment(horizontalLayout, Alignment.MIDDLE_CENTER);
+		setComponentAlignment(cashLayout, Alignment.MIDDLE_CENTER);
+		setComponentAlignment(down, Alignment.MIDDLE_CENTER);
+		
 	}
 
 	private String getCurrentCash() {

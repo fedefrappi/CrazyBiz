@@ -402,14 +402,6 @@ public class InsertItem extends GridLayout{
 				}
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}else{
-			// Update brand
-			try {
-				stm = DBactions.conn.prepareStatement("UPDATE brand SET brand_name=? WHERE brand_id=?;");
-				stm.clearParameters();
-				stm.setString(1, brand.getValue().toString());
-				stm.setInt(2, brandID);
-				stm.executeUpdate();
-			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}
 		
 		//MODEL - OK
@@ -437,14 +429,24 @@ public class InsertItem extends GridLayout{
 				}
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}else{
-			// Update model
-			try {
-				stm = DBactions.conn.prepareStatement("UPDATE model SET model_name=? WHERE model_id=?;");
-				stm.clearParameters();
-				stm.setString(1, model.getValue().toString());
-				stm.setInt(2, modelID);
-				stm.executeUpdate();
-			} catch (MySQLIntegrityConstraintViolationException e) {}
+			if(itemID != -1){
+				// Aggiorna item con il modello (e la relativa marca, selezionata) ---
+				try {
+					stm = DBactions.conn.prepareStatement("UPDATE item SET model_id=? WHERE item_id=?;");
+					stm.clearParameters();
+					stm.setInt(1, modelID);
+					stm.setInt(2, itemID);
+					stm.executeUpdate();
+					stm = DBactions.conn.prepareStatement("UPDATE model SET brand_id=? WHERE model_id=?;");
+					stm.clearParameters();
+					stm.setInt(1, brandID);
+					stm.setInt(2, modelID);
+					stm.executeUpdate();
+					
+				} catch (MySQLIntegrityConstraintViolationException e) {}
+			}else{
+				// Aggiornalo dopo aver creato l'item
+			}
 		}
 		
 		// ITEM - OK
@@ -471,7 +473,7 @@ public class InsertItem extends GridLayout{
 		}else{
 			// Update item
 			try {
-				stm = DBactions.conn.prepareStatement("UPDATE item SET source=?,lastModified=? WHERE item_id=?;");
+				stm = DBactions.conn.prepareStatement("UPDATE item SET source=?,lastModified=?,model_id=? WHERE item_id=?;");
 				stm.clearParameters();
 				if(source.getValue() == null){
 					stm.setNull(1, Types.VARCHAR);
@@ -479,7 +481,8 @@ public class InsertItem extends GridLayout{
 					stm.setString(1, source.getValue().toString());
 				}
 				stm.setDate(2, new Date(System.currentTimeMillis()));
-				stm.setInt(3, itemID);
+				stm.setInt(3, modelID);
+				stm.setInt(4, itemID);
 				stm.executeUpdate();
 			} catch (MySQLIntegrityConstraintViolationException e) {}
 		}

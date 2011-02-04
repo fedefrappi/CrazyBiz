@@ -6,13 +6,15 @@ public class MyResult {
 	private String brand;
 	private String model;
 	private String status;
+	private String source;
 	
-	public MyResult(int itemID, String brand, String model, String status) {
+	public MyResult(int itemID, String brand, String model, String status, String source) {
 		super();
 		this.itemID = itemID;
 		this.brand = brand;
 		this.model = model;
 		this.status = status;
+		this.source = source;
 	}
 	
 	public int getItemID() {
@@ -46,6 +48,12 @@ public class MyResult {
 	public String getStatus() {
 		return status;
 	}
-	
-	
+
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
 }

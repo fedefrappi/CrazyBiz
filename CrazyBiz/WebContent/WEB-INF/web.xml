@@ -16,6 +16,12 @@
   		<param-name>application</param-name>
   		<param-value>com.example.crazybiz.CrazybizApplication</param-value>
   	</init-param>
+  	<init-param>
+  		<description>
+  		Application widgetset</description>
+  		<param-name>widgetset</param-name>
+  		<param-value>com.example.crazybiz.widgetset.CrazybizWidgetset</param-value>
+  	</init-param>
   </servlet>
   <servlet-mapping>
   	<servlet-name>Crazybiz Application</servlet-name>
