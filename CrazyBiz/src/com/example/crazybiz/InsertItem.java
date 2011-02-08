@@ -67,6 +67,7 @@ public class InsertItem extends GridLayout{
 
 	
 	public InsertItem(final CrazybizApplication crazybizApplication, final String username) {
+		// Constructor to use when coming from Homepage
 		super(2,1);
 		this.crazybizApplication = crazybizApplication;
 		this.username = username;
@@ -78,7 +79,7 @@ public class InsertItem extends GridLayout{
 		watchingID = -1;
 		buyID = -1;
 		shippingID = -1;
-		proposalIDs = new ArrayList<Integer>();
+		proposalIDs = new ArrayList<Integer>(){};
 		postIDs = new ArrayList<Integer>();
 		soldID = -1;
 		

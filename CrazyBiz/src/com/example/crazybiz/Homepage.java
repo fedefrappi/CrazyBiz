@@ -19,6 +19,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.BaseTheme;
+import com.virtuallypreinstalled.hene.charts.BarChart;
 
 import db.DBactions;
 
@@ -91,9 +92,14 @@ public class Homepage extends VerticalLayout {
         horizontalLayout.addComponent(searchButton);
 		
 		// IMAGE
-		Embedded image = new Embedded("",new ThemeResource("images/pedobear.png"));
+		Embedded image;
+		if(new BigDecimal(cash.getValue().toString()).signum() == +1){
+			image = new Embedded("",new ThemeResource("images/RICHpedobear.png"));
+		}else{
+			image = new Embedded("",new ThemeResource("images/ANGRYpedobear.png"));
+		}
 		image.setType(Embedded.TYPE_IMAGE);
-		image.setHeight("500px");
+		image.setHeight("300px");
 		
 		
 		// NOTIFICATIONS AREA
