@@ -21,7 +21,7 @@ public class SoldPanel extends VerticalLayout implements Property.ValueChangeLis
         price = new TextField("Price");
         price.setValue(new BigDecimal(0.00));
 		date = new PopupDateField("Date");
-        date.setResolution(PopupDateField.RESOLUTION_DAY);
+        date.setResolution(PopupDateField.RESOLUTION_SEC);
         date.addListener(this);
         date.setImmediate(true);
         buyer = new TextField("Buyer");

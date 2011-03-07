@@ -26,7 +26,7 @@ public class BoughtPanel extends VerticalLayout implements Property.ValueChangeL
 		price.setValue(new BigDecimal(0.00));
 		date = new PopupDateField();
         date.setInputPrompt("Start date");
-        date.setResolution(PopupDateField.RESOLUTION_DAY);
+        date.setResolution(PopupDateField.RESOLUTION_SEC);
         date.addListener(this);
         date.setImmediate(true);
         

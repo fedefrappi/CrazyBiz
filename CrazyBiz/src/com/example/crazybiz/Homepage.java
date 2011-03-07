@@ -7,6 +7,7 @@ import java.sql.SQLException;
 
 import org.vaadin.notifique.Notifique;
 import org.vaadin.notifique.Notifique.Message;
+import org.vaadin.vaadinvisualizations.PieChart;
 
 import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
@@ -19,7 +20,6 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.BaseTheme;
-import com.virtuallypreinstalled.hene.charts.BarChart;
 
 import db.DBactions;
 
@@ -31,6 +31,7 @@ public class Homepage extends VerticalLayout {
 	private Label cash;
 	private Button insertButton;
 	private Button searchButton;
+	private Button statsButton;
 	
 	private HorizontalLayout down;
 	private Notifique notifications;
@@ -84,20 +85,36 @@ public class Homepage extends VerticalLayout {
 				crazybizApplication.getWindow().setContent(crazybizApplication.getSearch());
 			}
 		});
+        statsButton = new Button("View stats");
+        statsButton.addListener(new ClickListener() {		
+			@Override
+			public void buttonClick(ClickEvent event) {
+				crazybizApplication.getWindow().removeComponent(crazybizApplication.getHome());
+				crazybizApplication.setViewStats(new ViewStats(crazybizApplication, username));
+				crazybizApplication.getWindow().setContent(crazybizApplication.getViewStats());
+			}
+		});
         // Horizontal layout for buttons
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         horizontalLayout.setHeight("50px");
         horizontalLayout.setWidth(SIZE_UNDEFINED,0);
         horizontalLayout.addComponent(insertButton);
         horizontalLayout.addComponent(searchButton);
+        horizontalLayout.addComponent(statsButton);
 		
 		// IMAGE
 		Embedded image;
-		if(new BigDecimal(cash.getValue().toString()).signum() == +1){
+		if(!cash.getValue().toString().contains("-")){
 			image = new Embedded("",new ThemeResource("images/RICHpedobear.png"));
 		}else{
 			image = new Embedded("",new ThemeResource("images/ANGRYpedobear.png"));
 		}
+		// OLD check with the signum of the BigDecimal class...it fails miserably!
+		//	if(new BigDecimal(cash.getValue().toString()).signum() == 1){
+		//		image = new Embedded("",new ThemeResource("images/RICHpedobear.png"));
+		//	}else{
+		//		image = new Embedded("",new ThemeResource("images/ANGRYpedobear.png"));
+		//	}
 		image.setType(Embedded.TYPE_IMAGE);
 		image.setHeight("300px");
 		

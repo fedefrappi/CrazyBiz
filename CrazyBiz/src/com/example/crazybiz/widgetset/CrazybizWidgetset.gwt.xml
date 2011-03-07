@@ -24,4 +24,6 @@
     
 
     <inherits name="org.vaadin.jouni.animator.AnimatorWidgetset" />
+
+    <inherits name="org.vaadin.vaadinvisualizations.widgetset.VaadinvisualizationApplicationWidgetset" />
 </module>

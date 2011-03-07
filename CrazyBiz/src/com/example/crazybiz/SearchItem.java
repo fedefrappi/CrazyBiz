@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.apache.tomcat.dbcp.dbcp.DbcpException;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.Alignment;

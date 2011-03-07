@@ -10,6 +10,7 @@ public class CrazybizApplication extends Application {
 	private Homepage home;
 	private InsertItem insert;
 	private SearchItem search;
+	private ViewStats viewStats;
 	private String username;
 	
 	@Override
@@ -61,6 +62,14 @@ public class CrazybizApplication extends Application {
 
 	public void setUsername(String username){
 		this.username = username;
+	}
+	
+	public ViewStats getViewStats() {
+		return viewStats;
+	}
+
+	public void setViewStats(ViewStats viewStats) {
+		this.viewStats = viewStats;
 	}
 
 }
